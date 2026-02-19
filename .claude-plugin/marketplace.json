@@ -24,6 +24,14 @@
       "version": "1.0.0",
       "category": "development",
       "tags": ["git", "pr-review", "code-quality", "issue-triage", "plugin-packaging", "web-research", "dev-tools"]
+    },
+    {
+      "name": "workflow-cc-om",
+      "source": "./plugins/workflow-cc-om",
+      "description": "Adversarial 3-agent PR review with interactive issue triage and GitHub inline comments",
+      "version": "0.1.0",
+      "category": "development",
+      "tags": ["pr-review", "adversarial-review", "code-review", "github"]
     }
   ]
 }

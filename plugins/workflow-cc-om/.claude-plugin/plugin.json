@@ -1,0 +1,8 @@
+{
+  "name": "workflow-cc-om",
+  "description": "Custom Claude Code workflow plugins by Om — adversarial PR review with interactive triage and GitHub inline comments",
+  "version": "0.1.0",
+  "author": {
+    "name": "Om Morendha"
+  }
+}
