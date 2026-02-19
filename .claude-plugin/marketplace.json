@@ -1,0 +1,29 @@
+{
+  "name": "klair-marketplace",
+  "owner": {
+    "name": "Klair Team"
+  },
+  "metadata": {
+    "description": "Klair team Claude Code plugins for development workflows",
+    "version": "1.0.0",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "klair-legacy",
+      "source": "./plugins/klair-legacy",
+      "description": "Klair team development workflows - agents, skills, and commands for spec-driven development, code review, testing, and project management",
+      "version": "1.0.0",
+      "category": "development",
+      "tags": ["spec-driven", "tdd", "code-review", "agents", "workflows"]
+    },
+    {
+      "name": "m",
+      "source": "./plugins/m",
+      "description": "Personal developer toolkit - Git worktree management, PR workflows, code quality, issue triage, plugin packaging, web research, and writing tools",
+      "version": "1.0.0",
+      "category": "development",
+      "tags": ["git", "pr-review", "code-quality", "issue-triage", "plugin-packaging", "web-research", "dev-tools"]
+    }
+  ]
+}
