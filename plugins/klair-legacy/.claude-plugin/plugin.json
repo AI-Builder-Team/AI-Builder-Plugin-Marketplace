@@ -1,0 +1,9 @@
+{
+  "name": "klair-legacy",
+  "description": "Klair team development workflows - agents, skills, and commands for spec-driven development, code review, testing, and project management",
+  "version": "1.0.0",
+  "author": {
+    "name": "Klair Team"
+  },
+  "keywords": ["spec-driven", "tdd", "code-review", "agents", "workflows"]
+}
