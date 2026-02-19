@@ -7,7 +7,7 @@
 In Claude Code, run:
 
 ```
-/plugin marketplace add owner/repo-name
+/plugin marketplace add https://github.com/AI-Builder-Team/claude-code-plugin-marketplace
 ```
 
 ### 2. Install a plugin
