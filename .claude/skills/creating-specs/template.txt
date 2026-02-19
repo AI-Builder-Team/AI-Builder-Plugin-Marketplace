@@ -1,0 +1,243 @@
+TECHNICAL SPECIFICATION TEMPLATE
+
+This template provides a comprehensive structure for creating technical specifications following spec-driven development best practices. Each section includes guidelines, word count targets, and concrete examples based on the gold standard format.
+
+TABLE OF CONTENTS
+
+1. Title & Metadata
+2. Overview
+3. Out Of Scope
+4. Functional Requirements
+5. Technical Design
+
+================================================================================
+
+<section name="Title & Metadata">
+
+**Guidelines:**
+- Use a single clear sentence describing the feature as the title
+- Include metadata: Status, Created, Last Updated, Owner
+- Keep metadata concise (4 lines with consistent formatting)
+- Use horizontal rule (---) after metadata to separate from content
+
+**Example:**
+```
+# Key Metrics Month-over-Month Comparison
+
+**Status:** Ready for Review
+**Created:** 2025-01-06
+**Last Updated:** 2025-01-06
+**Owner:** Ash
+
+---
+```
+
+**Template:**
+```md
+# [Feature Name]
+
+**Status:** [Draft/Ready for Review/Approved/In Progress/Completed]
+**Created:** [YYYY-MM-DD]
+**Last Updated:** [YYYY-MM-DD]
+**Owner:** [Your Name]
+
+---
+```
+
+</section>
+
+================================================================================
+
+<section name="Overview">
+
+**Guidelines:**
+- Describe the high-level WHAT and HOW
+- Should be understandable by non-technical stakeholders
+- Focus on what is being built and how it works, not WHY it's needed
+- Be concise - cover only what needs to be covered
+- Use prose format, not bullet points
+- Do NOT include a paragraph explaining why the implementation is needed or its benefits
+- End with horizontal rule (---) to separate from next section
+
+**Example:**
+> This feature enhances the Key Metrics Summary section of the ARR Retention Reports screen by adding month-over-month comparison indicators to five key metrics. Users will be able to see at a glance how current metrics compare to the previous month, including both the previous month's value and the percentage change.
+>
+> The comparison chips will be added to: Gross Retention, Net Retention, DM Percentage, MTD Churn, and MTD Downsell. These metrics already have previous month data available in the component's data flow, making implementation straightforward without requiring backend changes. The comparison indicators will use color coding (green for improvements, red for degradation) with context-aware logic that accounts for metrics where lower values are better (churn and downsell).
+
+**Template:**
+```md
+## Overview
+
+[Describe what is being built and how it works]
+
+---
+```
+
+</section>
+
+================================================================================
+
+<section name="Out Of Scope">
+
+**Guidelines:**
+- Out Of Scope: What is explicitly NOT included with rationale (numbered with explanations)
+- Each item should explain WHY it is excluded
+- Be concise - cover only what needs to be covered
+- End with horizontal rule (---) to separate from next section
+
+**Example:**
+```
+## Out Of Scope
+
+1. **Not Adding Comparisons to All Metrics**: Explicitly excluding:
+   - Renewal-Event Retention (YTD metric - month-over-month doesn't apply)
+   - Invoicing Variance (requires backend data not currently available)
+   - Late Renewals (can be added in future phase)
+
+2. **No Backend Changes**: Feature uses existing data already fetched by the component. No new API endpoints or database changes required.
+
+3. **No Historical Trends Beyond One Month**: Feature shows only previous month comparison, not multi-month trends or sparklines.
+```
+
+**Template:**
+```md
+## Out Of Scope
+
+1. **[Item 1 Title]**: [Explanation and rationale]
+
+2. **[Item 2 Title]**: [Explanation and rationale]
+
+3. **[Item 3 Title]**: [Explanation and rationale]
+
+---
+```
+
+</section>
+
+================================================================================
+
+<section name="Functional Requirements">
+
+**Guidelines:**
+- Functional Requirements (FR1, FR2, etc.) define what the system must do
+- Each requirement MUST include a **Success Criteria** that defines how to verify it's complete
+- Use format: "**FRX: Requirement Title**" followed by bulleted details and success criteria
+- Include edge cases and error states where relevant
+- Be concise - cover only what needs to be covered
+- End with horizontal rule (---) to separate from next section
+
+**Example:**
+```
+## Functional Requirements
+
+**FR1: Display Previous Month Values**
+- Each of the five target metrics must display the previous month's value alongside the current value
+- Metrics: Gross Retention, Net Retention, DM Percentage, MTD Churn, MTD Downsell
+- **Success Criteria**: All five metrics show previous month value in the UI when data is available
+
+**FR2: Calculate Percentage Change**
+- System must calculate the percentage change from previous month to current month
+- Formula: `((current - previous) / previous) × 100`
+- Handle edge case when previous value is 0 (display 0% change or skip comparison)
+- **Success Criteria**: Percentage change is calculated correctly and displays 0% when previous value is 0
+
+**FR3: Color-Coded Indicators**
+- **For Retention Metrics (Gross, Net, DM):**
+  - Green: Increase in value (improvement)
+  - Red: Decrease in value (degradation)
+- **For Churn/Downsell Metrics:**
+  - Green: Decrease in value (improvement - less churn/downsell)
+  - Red: Increase in value (degradation - more churn/downsell)
+- **Success Criteria**: Colors correctly reflect improvement/degradation with inverse logic for churn metrics
+```
+
+**Template:**
+```md
+## Functional Requirements
+
+**FR1: [Requirement Title]**
+- [Specific requirement detail]
+- [Specific requirement detail]
+- **Success Criteria**: [How to verify this requirement is complete]
+
+**FR2: [Requirement Title]**
+- [Specific requirement detail]
+- [Edge case or special condition]
+- **Success Criteria**: [How to verify this requirement is complete]
+
+**FR3: [Requirement Title]**
+- [Specific requirement detail]
+- **Success Criteria**: [How to verify this requirement is complete]
+
+---
+```
+
+</section>
+
+================================================================================
+
+<section name="Technical Design">
+
+**Guidelines:**
+- Technical design with subsections:
+  - Files to Reference - Existing files with patterns to follow
+  - File(s) to Modify - Specific files being changed
+  - Data Flow - Visual representation of data movement
+- Include code snippets for data structures, API contracts, or algorithms
+- Use markdown code blocks with language tags for clarity
+- Audience is engineers implementing the feature
+- Be concise - include only relevant subsections, omit what's not needed
+- End section without horizontal rule (last section)
+
+**Example:**
+~~~
+## Technical Design
+
+**Files to Reference:**
+- `klair-client/src/components/Metric.tsx` - Existing metric component with comparison patterns
+- `klair-client/src/screens/PassiveInvestments/components/MetricCard.tsx` - Trend display examples
+- `klair-client/src/screens/RenewalsV3/DateChip.tsx` - Chip styling patterns
+
+**File(s) to Modify:**
+- `klair-client/src/screens/ARRRetentionReports/KeyMetricsSummary.tsx`
+
+### Data Flow
+
+```
+ARRRetentionReports (index.tsx)
+  ├─ Fetches financialsData (current month)
+  ├─ Fetches prevFinancialsData (previous month)
+  └─ Passes both to KeyMetricsSummary
+       ├─ computedMetrics useMemo hook
+       │   ├─ Calculates current metrics (existing)
+       │   ├─ Calculates previous metrics (existing for retention)
+       │   └─ NEW: Calculate previous MTD churn/downsell
+       └─ MetricCard components
+           └─ NEW: Pass comparison JSX via comparison prop
+```
+~~~
+
+**Template:**
+~~~md
+## Technical Design
+
+**Files to Reference:**
+- `path/to/file1.tsx` - Description of pattern to follow
+- `path/to/file2.tsx` - Description of pattern to follow
+
+**File(s) to Modify:**
+- `path/to/file.tsx` - Description of changes
+
+### Data Flow
+
+[Visual representation using code blocks or text diagrams showing how data moves through the system]
+
+```
+ComponentA
+  ├─ Fetches data from API
+  └─ Passes to ComponentB
+       └─ Renders UI
+```
+~~~
+
+</section>

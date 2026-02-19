@@ -1,0 +1,7 @@
+# AWS and Redshift dependencies for exploring Redshift tables
+
+# AWS SDK for accessing Secrets Manager
+boto3>=1.26.0
+
+# Redshift connector for database queries
+redshift-connector>=2.0.0
