@@ -1,0 +1,9 @@
+{
+  "name": "benji-workflow",
+  "description": "Spec-driven development workflow — research, spec, TDD implementation, and PR review with parallel agent orchestration",
+  "version": "1.0.0",
+  "author": {
+    "name": "Benji Alghurab"
+  },
+  "keywords": ["workflow", "spec-driven", "tdd", "code-review", "orchestration", "agents"]
+}
