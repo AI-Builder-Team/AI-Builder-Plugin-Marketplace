@@ -32,6 +32,14 @@
       "version": "0.1.0",
       "category": "development",
       "tags": ["pr-review", "adversarial-review", "code-review", "github"]
+    },
+    {
+      "name": "keval-pr-review",
+      "source": "./plugins/keval-pr-review",
+      "description": "Data-driven PR review skill derived from 500+ PRs and 1,988 human review comments. 7 review dimensions covering React/TypeScript, Python/FastAPI, security, error handling, and codebase-specific patterns.",
+      "version": "1.0.0",
+      "category": "development",
+      "tags": ["pr-review", "code-review", "data-driven", "react", "fastapi", "security", "error-handling"]
     }
   ]
 }
