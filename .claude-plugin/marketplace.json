@@ -19,7 +19,7 @@
     },
     {
       "name": "m",
-      "source": "./plugins/m",
+      "source": "./plugins/munawar",
       "description": "Personal developer toolkit - Git worktree management, PR workflows, code quality, issue triage, plugin packaging, web research, and writing tools",
       "version": "1.0.0",
       "category": "development",
@@ -40,6 +40,14 @@
       "version": "1.0.0",
       "category": "development",
       "tags": ["pr-review", "code-review", "data-driven", "react", "fastapi", "security", "error-handling"]
+    },
+    {
+      "name": "ash",
+      "source": "./plugins/ash/review-pr",
+      "description": "Comprehensive PR review using multiple specialized agents with validation, user triage, and automated GitHub comment posting",
+      "version": "1.0.0",
+      "category": "development",
+      "tags": ["pr-review", "code-review", "github", "triage", "agents"]
     }
   ]
 }
