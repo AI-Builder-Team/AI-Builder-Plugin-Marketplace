@@ -3,7 +3,7 @@ name: review-pr-om
 description: Adversarial 3-agent PR review with interactive issue triage and GitHub inline comments
 argument-hint: <pr-number>
 disable-model-invocation: true
-allowed-tools: Bash(gh repo view *), Bash(gh pr view *), Bash(gh pr diff *), Bash(gh api repos/*/pulls/*/reviews), Bash(gh auth status), Bash(grep *), Bash(awk *), Bash(head *), Bash(tail *), Read, Grep, Glob, Task, AskUserQuestion
+allowed-tools: Bash(gh repo view *), Bash(gh pr view *), Bash(gh pr diff *), Bash(gh api repos/*/pulls/*/reviews), Bash(gh auth status), Bash(git log *), Bash(git blame *), Bash(git show *), Bash(git diff *), Bash(jq *), Bash(grep *), Bash(awk *), Bash(head *), Bash(tail *), Bash(wc *), Bash(cat *), Bash(ls *), Read, Grep, Glob, Task, AskUserQuestion, WebFetch
 ---
 
 # Adversarial PR Review
