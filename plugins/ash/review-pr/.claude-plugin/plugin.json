@@ -1,0 +1,7 @@
+{
+  "name": "review-pr",
+  "description": "Comprehensive PR review using multiple specialized agents with validation, user triage, and automated GitHub comment posting",
+  "author": {
+    "name": "ash"
+  }
+}
