@@ -1,5 +1,5 @@
 ---
-name: plugin-packager
+name: "m:plugin-packager"
 description: Package skills, agents, commands into a Claude Code plugin from natural language instructions
 argument-hint: "<describe what you want to package in plain English>"
 ---

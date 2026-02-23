@@ -1,5 +1,5 @@
 ---
-name: shell-migrate
+name: "m:shell-migrate"
 description: "Plan migration of a legacy screen to the new-ui shell system"
 argument-hint: "[screen-path-or-name]"
 ---

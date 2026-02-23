@@ -1,5 +1,5 @@
 ---
-name: web-research
+name: "m:web-research"
 description: Web search, research, and page scraping via Perplexity + Firecrawl
 argument-hint: "<query or URL>"
 allowed-tools: [Bash, Read]

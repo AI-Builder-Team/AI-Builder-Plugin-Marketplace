@@ -1,5 +1,5 @@
 ---
-name: gtr
+name: "m:gtr"
 description: Git worktree management with teach mode - recap of all commands at the end
 argument-hint: "<request> e.g. 'create a worktree for feature X' or 'list worktrees' or 'clean merged worktrees'"
 allowed-tools: Bash(git *), Bash(echo *), Bash(ls *), Bash(pwd), Bash(cd *), Bash(mkdir *), Read(*)

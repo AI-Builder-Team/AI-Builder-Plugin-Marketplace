@@ -1,5 +1,5 @@
 ---
-name: issues-eval
+name: "m:issues-eval"
 description: "Parse a PR_comments file and launch parallel m:issue-qc agents for each unresolved issue giving each agent the PR_comments filepath and line numbers relevant to the issue it will investigate"
 argument-hint: "<path-to-pr-comments-file>"
 ---
