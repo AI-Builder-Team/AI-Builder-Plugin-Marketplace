@@ -19,9 +19,9 @@
     },
     {
       "name": "m",
-      "source": "./plugins/m",
+      "source": "./plugins/munawar",
       "description": "Personal developer toolkit - Git worktree management, PR workflows, code quality, issue triage, plugin packaging, web research, and writing tools",
-      "version": "1.0.0",
+      "version": "2.2.1",
       "category": "development",
       "tags": ["git", "pr-review", "code-quality", "issue-triage", "plugin-packaging", "web-research", "dev-tools"]
     },
@@ -32,6 +32,22 @@
       "version": "0.1.0",
       "category": "development",
       "tags": ["pr-review", "adversarial-review", "code-review", "github"]
+    },
+    {
+      "name": "keval-pr-review",
+      "source": "./plugins/keval-pr-review",
+      "description": "Data-driven PR review skill derived from 500+ PRs and 1,988 human review comments. 7 review dimensions covering React/TypeScript, Python/FastAPI, security, error handling, and codebase-specific patterns.",
+      "version": "1.0.0",
+      "category": "development",
+      "tags": ["pr-review", "code-review", "data-driven", "react", "fastapi", "security", "error-handling"]
+    },
+    {
+      "name": "ash",
+      "source": "./plugins/ash/review-pr",
+      "description": "Comprehensive PR review using multiple specialized agents with validation, user triage, and automated GitHub comment posting",
+      "version": "1.0.0",
+      "category": "development",
+      "tags": ["pr-review", "code-review", "github", "triage", "agents"]
     }
   ]
 }

@@ -1,9 +1,0 @@
-{
-  "name": "m",
-  "description": "Personal developer toolkit - Git worktree management, PR workflows, code quality, issue triage, plugin packaging, web research, and writing tools",
-  "version": "1.0.0",
-  "author": {
-    "name": "Munawar Shah"
-  },
-  "keywords": ["git", "pr-review", "code-quality", "issue-triage", "plugin-packaging", "web-research", "writing", "dev-tools"]
-}

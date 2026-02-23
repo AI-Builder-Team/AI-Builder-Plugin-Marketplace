@@ -1,0 +1,9 @@
+{
+  "name": "keval-pr-review",
+  "description": "Data-driven PR review skill derived from analysis of 500+ PRs and 1,988 human review comments. Covers React/TypeScript frontend and Python/FastAPI backend with 7 review dimensions and codebase-specific patterns.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Keval Shah"
+  },
+  "keywords": ["pr-review", "code-review", "react", "fastapi", "error-handling", "security", "data-driven"]
+}
