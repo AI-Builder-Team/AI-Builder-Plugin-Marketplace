@@ -6,6 +6,18 @@ argument-hint: "<path-to-qc-annotated-pr-comments-file>"
 
 Read the file at `$ARGUMENTS`.
 
+## Step 0: QC Gate (Circuit Breaker)
+
+Before doing anything else, check whether the file contains **any** `QC_BOT_COMMENTS:` annotations. Search for the literal string `QC_BOT_COMMENTS:` in the file content.
+
+- **If NO `QC_BOT_COMMENTS:` lines are found:** STOP immediately. Do NOT proceed to parsing or launching agents. Tell the user:
+
+  > "This file has not been QC-annotated yet. Run `/issues-eval <file>` first to have each issue independently validated before fixing. If you want to proceed anyway without QC, re-run with explicit instruction to skip the QC gate."
+
+  Then **wait for the user's response**. Only continue if the user explicitly says to proceed (e.g., "proceed anyway", "skip QC", "go ahead"). Otherwise, end here.
+
+- **If `QC_BOT_COMMENTS:` lines ARE found:** Proceed to Step 1.
+
 ## Step 1: Parse issue blocks
 
 Find every section that starts with `##### \`<file>:<line>\` 🟡 Unresolved`. Each issue block runs from that header down through the `QC_BOT_COMMENTS:` line and ends at the next `---` separator. Record the start and end line numbers for each block, and extract the target file path from the header (the part before the colon).
