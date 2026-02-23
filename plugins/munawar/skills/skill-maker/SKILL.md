@@ -1,5 +1,5 @@
 ---
-name: skill-maker
+name: "m:skill-maker"
 description: Create new Claude Code skills with proper structure and documentation
 argument-hint: "[skill-name-or-description]"
 disable-model-invocation: false

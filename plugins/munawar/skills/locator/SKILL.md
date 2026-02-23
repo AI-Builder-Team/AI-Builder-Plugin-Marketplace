@@ -1,5 +1,5 @@
 ---
-name: locator
+name: "m:locator"
 description: Load a feature's FEATURE.md and all its specs into context
 argument-hint: "<hint>"
 ---

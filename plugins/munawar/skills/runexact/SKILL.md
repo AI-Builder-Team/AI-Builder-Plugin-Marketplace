@@ -1,5 +1,5 @@
 ---
-name: runexact
+name: "m:runexact"
 description: Execute a command exactly as written and return full output
 argument-hint: [command]
 allowed-tools: Bash(*)

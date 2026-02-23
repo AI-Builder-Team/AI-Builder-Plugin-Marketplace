@@ -1,5 +1,5 @@
 ---
-name: pr-reader
+name: "m:pr-reader"
 description: "Fetch and display unresolved PR comments by default. Pass a PR number, branch name, or nothing for current branch. Add --all to include resolved threads."
 argument-hint: "<PR# or branch> [--all] e.g. 432, 110-chorus --all, or blank for current branch"
 ---

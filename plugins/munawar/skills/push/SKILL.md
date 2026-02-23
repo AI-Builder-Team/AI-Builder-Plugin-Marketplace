@@ -1,5 +1,5 @@
 ---
-name: push
+name: "m:push"
 description: Format, lint, typecheck, commit, and push changed files
 argument-hint: "[commit-message]"
 ---
