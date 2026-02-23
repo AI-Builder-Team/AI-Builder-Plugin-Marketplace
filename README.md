@@ -20,19 +20,19 @@ Skills are now available as `/m:gtr`, `/m:push`, `/m:pr-reader`, etc.
 
 ## Package your own stuff
 
-Have skills, agents, or commands in `~/.claude/` you want to package? Use the plugin packager:
+Have skills, agents, or commands in `~/.claude/` you want to package? Use the plugin packager with plain English:
 
 ```
-/m:plugin-packager ~/.claude my-tools --marketplace /path/to/this/repo
+/m:plugin-packager package my ~/.claude skills and agents into a plugin called my-tools and register it in this marketplace
 ```
 
-Cherry-pick specific components with `--only`:
+Cherry-pick specific components:
 
 ```
-/m:plugin-packager ~/.claude my-tools --marketplace /path/to/this/repo --only skills:review,deploy agents:security-checker
+/m:plugin-packager package just the review and deploy skills from ~/.claude into my-tools plugin, register in this marketplace
 ```
 
-This scans the source directory, copies components into `plugins/my-tools/`, generates the plugin manifest, and registers it in the marketplace. Commit and push to distribute.
+The packager parses your request, scans the source directory, copies components into `plugins/my-tools/`, generates the plugin manifest, and registers it in the marketplace. It auto-detects version bumps when updating existing plugins. Commit and push to distribute.
 
 ## Updating plugins
 

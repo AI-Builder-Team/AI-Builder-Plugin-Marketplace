@@ -3,6 +3,7 @@ name: skill-maker
 description: Create new Claude Code skills with proper structure and documentation
 argument-hint: "[skill-name-or-description]"
 disable-model-invocation: false
+model: opus
 ---
 
 # Skill Maker - Create Claude Code Skills
@@ -60,6 +61,7 @@ You can include:
 | `description` | Yes | Shows in autocomplete |
 | `argument-hint` | No | Help text for arguments, e.g., `"[file-path] [new-name]"` |
 | `disable-model-invocation` | No | If true, skill only runs commands but doesn't send prompt to Claude |
+| `model` | No | Pin to a specific model: `haiku`, `sonnet`, or `opus`. Overrides the currently selected model for this skill — use `haiku` for lightweight/fast tasks, `opus` for deep reasoning. |
 | `context` | No | `fork` creates isolated context, `default` shares main context |
 | `agent` | No | Specify agent type: `Explore`, `Bash`, `general-purpose`, etc. |
 | `allowed-tools` | No | Whitelist tools for safety, e.g., `Bash(gh *, git *)` |

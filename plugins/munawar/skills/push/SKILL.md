@@ -44,12 +44,14 @@ Run formatters LAST so they catch everything including any lint fixes. Run on ON
 - If it did, stage those files and commit as a separate commit with message "Run formatters on changed files".
 - If no changes, skip this commit.
 
-## Step 5: Type check
+## Step 5: Type check (scoped to changed files only)
 
-- **Frontend**: from `klair-client/`, run `pnpm tsc --noEmit`
-- **Backend**: from `klair-api/`, run `uv run pyright`
+Only typecheck the files that were actually changed. Do NOT fix pre-existing type errors in untouched files.
+
+- **Backend**: from `klair-api/`, run `uv run pyright <changed-backend-files>` passing only the specific changed `.py` files as arguments. Pyright supports file-level checking.
+- **Frontend**: `tsc` cannot check individual files with tsconfig, so run `pnpm tsc --noEmit 2>&1` and filter the output to only show errors in the changed frontend files. Use grep to match only lines containing the changed file paths. If the only errors are in files you didn't touch, ignore them and proceed.
 - Only run the type checker for the side (frontend/backend) that has changes.
-- If type check fails, fix the issues and re-run. Do NOT proceed until it passes.
+- If type check fails ON CHANGED FILES, fix those issues and re-run. Do NOT fix errors in files you didn't change. Do NOT proceed until changed files pass clean.
 
 ## Step 6: Handle branch divergence
 
