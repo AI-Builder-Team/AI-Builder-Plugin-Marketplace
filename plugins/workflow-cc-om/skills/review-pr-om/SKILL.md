@@ -3,7 +3,7 @@ name: review-pr-om
 description: Adversarial 3-agent PR review with interactive issue triage and GitHub inline comments
 argument-hint: <pr-number>
 disable-model-invocation: true
-allowed-tools: Bash(gh *), Read, Grep, Glob, Task, AskUserQuestion
+allowed-tools: Bash(gh repo view *), Bash(gh pr view *), Bash(gh pr diff *), Bash(gh api repos/*/pulls/*/reviews), Bash(gh auth status), Read, Grep, Glob, Task, AskUserQuestion
 ---
 
 # Adversarial PR Review
@@ -76,6 +76,8 @@ Spawn a `general-purpose` subagent via the **Task** tool.
 > ```
 >
 > If you find NO issues, say "NO_ISSUES_FOUND" and briefly explain why the PR looks good.
+>
+> **Bash hygiene:** Only run Bash for actual shell commands (gh, echo, etc.). Do ALL reasoning and analysis as plain text output — never inside bash script comments. Never write shell scripts with `#` comment blocks to think through logic. Avoid `->`, `=>`, or `>` characters inside any bash command you run.
 
 Wait for Agent 1 to complete. Save its full output.
 
@@ -132,6 +134,8 @@ Spawn a second `general-purpose` subagent.
 > - **Description:** {explanation}
 > - **Suggested comment:** {comment text}
 > ```
+>
+> **Bash hygiene:** Only run Bash for actual shell commands (gh, echo, etc.). Do ALL reasoning and analysis as plain text output — never inside bash script comments. Never write shell scripts with `#` comment blocks to think through logic. Avoid `->`, `=>`, or `>` characters inside any bash command you run.
 
 Wait for Agent 2 to complete. Save its full output.
 
@@ -185,6 +189,8 @@ Spawn a third `general-purpose` subagent.
 > ## Final Review: 0 findings
 > This PR looks clean. No actionable issues after adversarial review.
 > ```
+>
+> **Bash hygiene:** Only run Bash for actual shell commands (gh, echo, etc.). Do ALL reasoning and analysis as plain text output — never inside bash script comments. Never write shell scripts with `#` comment blocks to think through logic. Avoid `->`, `=>`, or `>` characters inside any bash command you run.
 
 Wait for Agent 3 to complete. Parse its output to extract the final findings list.
 
