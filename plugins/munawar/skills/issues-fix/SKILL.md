@@ -12,7 +12,7 @@ Before doing anything else, check whether the file contains **any** `QC_BOT_COMM
 
 - **If NO `QC_BOT_COMMENTS:` lines are found:** STOP immediately. Do NOT proceed to parsing or launching agents. Tell the user:
 
-  > "This file has not been QC-annotated yet. Run `/issues-eval <file>` first to have each issue independently validated before fixing. If you want to proceed anyway without QC, re-run with explicit instruction to skip the QC gate."
+  > "This file has not been QC-annotated yet. Run `/m:issues-eval <file>` first to have each issue independently validated before fixing. If you want to proceed anyway without QC, re-run with explicit instruction to skip the QC gate."
 
   Then **wait for the user's response**. Only continue if the user explicitly says to proceed (e.g., "proceed anyway", "skip QC", "go ahead"). Otherwise, end here.
 
@@ -42,7 +42,7 @@ Phase 2 (parallel):
 
 ## Step 3: Launch phases
 
-For each phase, launch `bugfix` agents via the Task tool (`subagent_type: "bugfix"`). Launch all agents within a phase in parallel — do not wait for any agent in the phase to finish before launching the next agent in that phase. **Do** wait for all agents in a phase to complete before starting the next phase.
+For each phase, launch `m:bugfix` agents via the Task tool (`subagent_type: "m:bugfix"`). Launch all agents within a phase in parallel — do not wait for any agent in the phase to finish before launching the next agent in that phase. **Do** wait for all agents in a phase to complete before starting the next phase.
 
 Each agent prompt must include the **raw issue block(s) verbatim** — the entire text from the `#####` header through the `QC_BOT_COMMENTS:` line for each issue. Do not summarize, reformat, or add your own interpretation. Pass it wholesale. When an agent receives multiple consolidated issues, include all blocks sequentially.
 
