@@ -1,11 +1,24 @@
 ---
 description: Post a PR review request to Google Chat
-allowed-tools: Bash(gh pr view:*), Bash(git branch:*), Bash(curl:*)
+allowed-tools: Bash(gh pr view:*), Bash(git branch:*), Bash(curl:*), Bash(cat:*)
 ---
 
 # Ping — Post PR Review Request to Google Chat
 
 Post a message to the team's Google Chat channel requesting a PR review.
+
+## Step 0 — Load Webhook URL
+
+Read the webhook URL from the config file:
+
+```bash
+cat ~/.claude/config/ping.json
+```
+
+Extract the `gchat_webhook_url` value. If the file doesn't exist or the key is missing, stop and tell the user:
+> "Missing config. Create `~/.claude/config/ping.json` with a `gchat_webhook_url` key."
+
+Store: `WEBHOOK_URL`.
 
 ## Step 1 — Find the PR URL
 
@@ -38,11 +51,11 @@ Use `KLAIR_ID: PR_TITLE` as the label. If the PR title already starts with the K
 
 ## Step 4 — Post to Google Chat
 
-Send the message using the webhook:
+Send the message using the webhook URL from Step 0:
 
 ```bash
 curl -s -X POST \
-  'https://chat.googleapis.com/v1/spaces/AAQAJOLbn2E/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=BSUYFPrTBIzD-fKuopnf9tiFGERzG4POAfatF5qloLM' \
+  '$WEBHOOK_URL' \
   -H 'Content-Type: application/json' \
   -d '{
     "text": "*PR Review Requested*\n<'"$PR_URL"'|'"$LABEL"'>"
