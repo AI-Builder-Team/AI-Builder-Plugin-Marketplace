@@ -12,7 +12,7 @@ Before doing anything else, check whether the file contains **any** `QC_BOT_COMM
 
 - **If NO `QC_BOT_COMMENTS:` lines are found:** STOP immediately. Do NOT proceed to parsing or launching agents. Tell the user:
 
-  > "This file has not been QC-annotated yet. Run `/m:m:issues-eval <file>` first to have each issue independently validated before fixing. If you want to proceed anyway without QC, re-run with explicit instruction to skip the QC gate."
+  > "This file has not been QC-annotated yet. Run `/m:issues-eval <file>` first to have each issue independently validated before fixing. If you want to proceed anyway without QC, re-run with explicit instruction to skip the QC gate."
 
   Then **wait for the user's response**. Only continue if the user explicitly says to proceed (e.g., "proceed anyway", "skip QC", "go ahead"). Otherwise, end here.
 
