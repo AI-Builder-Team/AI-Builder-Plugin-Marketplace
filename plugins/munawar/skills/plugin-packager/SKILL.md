@@ -158,7 +158,11 @@ If the user wants marketplace registration:
 
 1. Read `<marketplace>/.claude-plugin/marketplace.json`
 2. Compute the relative source path from the marketplace root to the plugin directory (must start with `./`)
-3. Add a new entry to the `plugins` array:
+3. Search the `plugins` array for an existing entry with the same `"name"`:
+
+   **If the plugin already exists** in the array: update the existing entry's `version`, `description`, and `tags` fields to match the new values. Do NOT add a duplicate entry.
+
+   **If the plugin does NOT exist** in the array: add a new entry:
 
 ```json
 {
@@ -171,7 +175,7 @@ If the user wants marketplace registration:
 }
 ```
 
-4. Write the updated `marketplace.json` back
+4. Write the updated `marketplace.json` back. The version in the marketplace entry MUST match the version in `plugin.json` — both come from Step 1.5.
 
 If the marketplace.json does NOT exist yet but the user wants marketplace registration, create the full marketplace structure:
 
