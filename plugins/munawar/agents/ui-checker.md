@@ -103,10 +103,29 @@ For each route in the list:
 #### f. Dark mode screenshot
 - Take screenshot, save as `.scratch/ui-checks/{route-slug}-dark.png`
 
-#### g. Toggle back to light mode
+#### g. Text contrast spot-check (after each mode screenshot)
+
+After taking light and dark screenshots for a route, perform a quick contrast check in the current mode:
+
+1. **Select-all text test**: Run `browser_evaluate` with:
+   ```js
+   () => {
+     const sel = window.getSelection();
+     sel.selectAllChildren(document.querySelector('main') || document.body);
+     return 'Text selected for contrast check';
+   }
+   ```
+2. Take a screenshot with text highlighted: `.scratch/ui-checks/{route-slug}-{mode}-selected.png`
+3. Clear selection: `() => window.getSelection().removeAllRanges()`
+4. **What to look for**: If highlighting reveals text that was invisible or nearly invisible before selection, that's a contrast failure. Text that "appears" only when highlighted means the text color is too close to the background color.
+5. Flag any such findings as **HIGH severity** contrast issues in the report.
+
+This catches cases where CSS token aliases map background colors to text properties (e.g., `text-accent` resolving to a surface color instead of a readable text color).
+
+#### h. Toggle back to light mode
 - Click the toggle again or remove the `dark` class to restore light mode for the next route
 
-#### h. Side panel check (if applicable)
+#### i. Side panel check (if applicable)
 For routes that support detail/insights panels (`collections-v2`, `aws-spend`, `edu-financial`):
 - Look for a clickable table row or "details" / "insights" button in the snapshot
 - If found, click it to open the side panel
@@ -155,11 +174,12 @@ All screenshots saved to `.scratch/ui-checks/`
 When evaluating screenshots and snapshots, look for:
 
 1. **Missing colors** — elements that appear white/transparent when they should have a background
-2. **Wrong contrast** — text barely visible against its background
+2. **Wrong contrast** — text barely visible against its background. **Use the select-all highlight test** (Step 2g) to catch text that blends into backgrounds in either mode.
 3. **Broken dark mode** — elements that don't switch between light/dark (still showing light colors in dark mode or vice versa)
 4. **Layout breaks** — elements overlapping, content overflow, missing spacing
 5. **Console errors** — runtime errors that could indicate broken imports or missing components
 6. **Unstyled components** — buttons, cards, tables that lost their styling
+7. **Misused token aliases** — background tokens used as text colors or vice versa (common after theme migrations). Symptoms: text invisible in one mode but visible in the other, or text only visible when highlighted.
 
 ### What NOT to flag
 
