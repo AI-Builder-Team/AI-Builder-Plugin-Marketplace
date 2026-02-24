@@ -77,7 +77,7 @@ Spawn a `general-purpose` subagent via the **Task** tool.
 >
 > If you find NO issues, say "NO_ISSUES_FOUND" and briefly explain why the PR looks good.
 >
-> **Bash hygiene:** Only run Bash for actual shell commands (gh, echo, etc.). Do ALL reasoning and analysis as plain text output — never inside bash script comments. Never write shell scripts with `#` comment blocks to think through logic. Avoid `->`, `=>`, or `>` characters inside any bash command you run. For file reading use the Read tool, for searching use the Grep and Glob tools — do not run grep, awk, head, or tail via Bash unless there is no alternative.
+> **Bash hygiene:** Only run Bash for actual shell commands (gh, git, echo, etc.). Do ALL reasoning and analysis as plain text output — never inside bash script comments. Never write shell scripts with `#` comment blocks to think through logic. Avoid `->`, `=>`, or `>` characters (including `2>/dev/null`) inside any bash command you run. Do NOT chain commands with `;`, `&&`, or `||`. Use the **Read** tool instead of `cat`, use the **Glob** tool instead of `ls`, use the **Grep** tool instead of `grep`, `awk`, `head`, or `tail` — never run those via Bash.
 
 Wait for Agent 1 to complete. Save its full output.
 
@@ -135,7 +135,7 @@ Spawn a second `general-purpose` subagent.
 > - **Suggested comment:** {comment text}
 > ```
 >
-> **Bash hygiene:** Only run Bash for actual shell commands (gh, echo, etc.). Do ALL reasoning and analysis as plain text output — never inside bash script comments. Never write shell scripts with `#` comment blocks to think through logic. Avoid `->`, `=>`, or `>` characters inside any bash command you run. For file reading use the Read tool, for searching use the Grep and Glob tools — do not run grep, awk, head, or tail via Bash unless there is no alternative.
+> **Bash hygiene:** Only run Bash for actual shell commands (gh, git, echo, etc.). Do ALL reasoning and analysis as plain text output — never inside bash script comments. Never write shell scripts with `#` comment blocks to think through logic. Avoid `->`, `=>`, or `>` characters (including `2>/dev/null`) inside any bash command you run. Do NOT chain commands with `;`, `&&`, or `||`. Use the **Read** tool instead of `cat`, use the **Glob** tool instead of `ls`, use the **Grep** tool instead of `grep`, `awk`, `head`, or `tail` — never run those via Bash.
 
 Wait for Agent 2 to complete. Save its full output.
 
@@ -190,7 +190,7 @@ Spawn a third `general-purpose` subagent.
 > This PR looks clean. No actionable issues after adversarial review.
 > ```
 >
-> **Bash hygiene:** Only run Bash for actual shell commands (gh, echo, etc.). Do ALL reasoning and analysis as plain text output — never inside bash script comments. Never write shell scripts with `#` comment blocks to think through logic. Avoid `->`, `=>`, or `>` characters inside any bash command you run. For file reading use the Read tool, for searching use the Grep and Glob tools — do not run grep, awk, head, or tail via Bash unless there is no alternative.
+> **Bash hygiene:** Only run Bash for actual shell commands (gh, git, echo, etc.). Do ALL reasoning and analysis as plain text output — never inside bash script comments. Never write shell scripts with `#` comment blocks to think through logic. Avoid `->`, `=>`, or `>` characters (including `2>/dev/null`) inside any bash command you run. Do NOT chain commands with `;`, `&&`, or `||`. Use the **Read** tool instead of `cat`, use the **Glob** tool instead of `ls`, use the **Grep** tool instead of `grep`, `awk`, `head`, or `tail` — never run those via Bash.
 
 Wait for Agent 3 to complete. Parse its output to extract the final findings list.
 
