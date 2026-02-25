@@ -1,14 +1,14 @@
 ---
 name: review-pr-om
-description: Adversarial PR review using pr-review-toolkit specialized agents, adversarial challenge, arbitration, interactive triage, and GitHub inline comments
+description: PR review using pr-review-toolkit specialized agents, senior verification, interactive triage, and GitHub inline comments
 argument-hint: <pr-number>
 disable-model-invocation: true
 allowed-tools: Bash(gh repo view *), Bash(gh pr view *), Bash(gh pr diff *), Bash(gh api repos/*/pulls/*/reviews), Bash(gh auth status), Bash(git log *), Bash(git blame *), Bash(git show *), Bash(git diff *), Bash(jq *), Bash(grep *), Bash(awk *), Bash(head *), Bash(tail *), Bash(wc *), Bash(cat *), Bash(ls *), Read, Grep, Glob, Task, AskUserQuestion, WebFetch
 ---
 
-# Adversarial PR Review
+# PR Review
 
-You are running an interactive adversarial PR review workflow for PR **#$ARGUMENTS**.
+You are running an interactive PR review workflow for PR **#$ARGUMENTS**.
 
 ultrathink
 
@@ -43,9 +43,9 @@ Launch ALL pr-review-toolkit agents in parallel using the **Task** tool with `ru
 | Code Quality | `pr-review-toolkit:code-reviewer` | sonnet | Bugs, security vulnerabilities, logic errors, API misuse, style guide compliance |
 | Silent Failures | `pr-review-toolkit:silent-failure-hunter` | sonnet | Swallowed exceptions, empty catch blocks, silent error suppression, inadequate fallbacks |
 | Test Coverage | `pr-review-toolkit:pr-test-analyzer` | sonnet | Test coverage gaps, test quality, missing edge case tests |
-| Comments | `pr-review-toolkit:comment-analyzer` | haiku | Comment accuracy, stale/misleading docs, comment rot |
-| Type Design | `pr-review-toolkit:type-design-analyzer` | haiku | Type invariants, schema design, encapsulation quality |
-| Code Simplification | `pr-review-toolkit:code-simplifier` | haiku | Unnecessary complexity, readability improvements, over-engineering |
+| Comments | `pr-review-toolkit:comment-analyzer` | sonnet | Comment accuracy, stale/misleading docs, comment rot |
+| Type Design | `pr-review-toolkit:type-design-analyzer` | sonnet | Type invariants, schema design, encapsulation quality |
+| Code Simplification | `pr-review-toolkit:code-simplifier` | sonnet | Unnecessary complexity, readability improvements, over-engineering |
 
 Skip `pr-review-toolkit:type-design-analyzer` if no new types or interfaces are introduced in the PR.
 
@@ -79,7 +79,7 @@ Skip `pr-review-toolkit:type-design-analyzer` if no new types or interfaces are 
 > - "Nit" issues that don't affect correctness or readability
 > - Things that are clearly intentional and well-reasoned
 >
-> If you find NO issues, say "NO_ISSUES_FOUND" and briefly explain why the PR looks clean from your perspective.
+> If you find NO issues, say "NO_ISSUES_FOUND" — but you MUST justify this by listing the specific areas you examined and why each is clean. Do not just say "looks good". Example: "Checked error handling in X — all paths return or throw. Checked boundary conditions in Y — input is validated at line Z."
 
 **After all agents complete — consolidate findings:**
 
@@ -89,97 +89,45 @@ Skip `pr-review-toolkit:type-design-analyzer` if no new types or interfaces are 
 4. Tag each finding with its source agent (e.g., "Source: code-reviewer") for traceability.
 5. Save the consolidated findings list — this is the input for Phase 2.
 
-## Phase 2: Adversarial Challenge (Agent 2 — Challenger)
+## Phase 2: Senior Review (Verification & Calibration)
 
 Spawn a `general-purpose` subagent with `model: "sonnet"`.
 
-**Prompt for Agent 2:**
+**Prompt for Senior Reviewer:**
 
-> You are a devil's advocate reviewer. Your job is to stress-test the findings of a code review. Challenge every finding — argue the author's perspective.
+> You are a senior staff engineer performing the final verification pass on a PR review. Your job is to verify each finding against the actual code, calibrate severity, catch what the specialists missed, and produce the final review.
+>
+> **Your default stance is inclusion** — a finding survives unless you can prove it's wrong. You are not here to argue the author's perspective or play devil's advocate. You are here to ensure the review is accurate and complete.
 >
 > **The PR:** #$ARGUMENTS
 >
-> **Step 1:** Run `gh pr diff $ARGUMENTS` and read the relevant source files to independently understand the code.
+> **Step 1:** Run `gh pr diff $ARGUMENTS` and read the relevant source files to independently understand the code. Also read the PR description with `gh pr view $ARGUMENTS --json body --jq .body`.
 >
-> **Step 2:** Read the PR description with `gh pr view $ARGUMENTS --json body --jq .body` to understand the author's intent.
->
-> **Step 3:** For EACH finding below, argue the counter-position:
+> **Step 2:** For EACH finding below, read the flagged code in its surrounding context and assign a verdict:
 >
 > {INSERT CONSOLIDATED FINDINGS FROM PHASE 1 HERE}
 >
-> For each finding, consider:
-> - Is this actually a problem in this specific context, or is it theoretical?
-> - Is there surrounding code, framework behavior, or runtime guarantees that make this safe?
-> - Is the severity correct? Would this actually cause a production issue?
-> - Is the reviewer imposing their preference rather than catching a real issue?
-> - Could the author have written it this way intentionally for a good reason?
-> - Is the suggested comment accurate and actionable, or vague/misleading?
+> **Verdicts:**
+> - **confirmed** — the finding is accurate as stated. Keep severity and comment as-is.
+> - **escalated** — the finding is real but the specialists *understated* the severity. Explain what they missed and upgrade the severity.
+> - **downgraded** — the finding is real but overstated. Adjust the severity downward and explain why.
+> - **refined** — the finding is directionally correct but the description or comment needs improvement. Provide an improved comment.
+> - **dismissed** — the finding is a false positive. **You MUST cite the specific line(s) of code, type constraint, or framework guarantee that proves this is safe.** Vague reasoning like "this is theoretical", "unlikely in practice", or "the author probably intended this" is NOT sufficient for dismissal.
 >
-> **Step 4:** Also independently scan for issues the specialized agents MISSED. Focus especially on:
+> For each finding, also consider:
+> - Does the surrounding code (callers, error boundaries, type system) make this safe? Cite the specific lines.
+> - Is the severity calibrated correctly? Would this cause a production issue, a subtle bug, or just confusion?
+> - Is the suggested comment accurate, actionable, and constructive? Improve it if not.
+>
+> **Step 3:** Independently scan for issues the specialists MISSED. Focus on:
 > - Subtle bugs that require multi-file context
-> - Security issues that only appear when you trace data flow
+> - Security issues that only appear when you trace data flow end-to-end
 > - Edge cases that require domain knowledge
+> - Interaction effects between changes in different files
 >
-> **Step 5:** Output for EACH of the Phase 1 findings:
+> **Step 4:** Output the FINAL review. Include all confirmed, escalated, downgraded, and refined findings. Include missed issues you discovered. Exclude only dismissed findings.
 >
-> ```
-> ### F{N}: {original title}
-> - **Verdict:** valid | false-positive | overstated | understated | needs-refinement
-> - **Reasoning:** {detailed argument for your verdict — be specific, cite code}
-> - **Refined comment:** {if needs-refinement: improved comment text. Otherwise: "N/A"}
-> ```
->
-> Then, if you found missed issues:
->
-> ```
-> ### MISSED ISSUES
->
-> ### M{N}: {title}
-> - **File:** {path}
-> - **Line:** {line number}
-> - **Severity:** critical | warning | nit
-> - **Category:** {category}
-> - **Description:** {explanation}
-> - **Suggested comment:** {comment text}
-> ```
->
-> **Bash hygiene:** Only run Bash for actual shell commands (gh, git, echo, etc.). Do ALL reasoning and analysis as plain text output — never inside bash script comments. Never write shell scripts with `#` comment blocks to think through logic. Avoid `->`, `=>`, or `>` characters (including `2>/dev/null`) inside any bash command you run. Do NOT chain commands with `;`, `&&`, or `||`. Use the **Read** tool instead of `cat`, use the **Glob** tool instead of `ls`, use the **Grep** tool instead of `grep`, `awk`, `head`, or `tail` — never run those via Bash.
-
-Wait for Agent 2 to complete. Save its full output.
-
-## Phase 3: Arbitration (Agent 3 — Arbiter)
-
-Spawn a `general-purpose` subagent with `model: "sonnet"`.
-
-**Prompt for Agent 3:**
-
-> You are an impartial arbiter. You have two perspectives on a PR review. Your job is to make the final call on what gets included.
->
-> **The PR:** #$ARGUMENTS
->
-> Run `gh pr diff $ARGUMENTS` and read the source files to form your own independent understanding.
->
-> **Phase 1 (Specialized Review) consolidated findings:**
-> {INSERT CONSOLIDATED FINDINGS FROM PHASE 1}
->
-> **Agent 2 (Challenger) analysis:**
-> {INSERT AGENT 2's FULL OUTPUT}
->
-> **Your task:**
->
-> 1. For each finding, weigh both perspectives. You are NOT biased toward either agent.
-> 2. Decide: **INCLUDE** or **EXCLUDE** from the final review.
->    - INCLUDE if: the finding identifies a genuine issue that the PR author should address or acknowledge
->    - EXCLUDE if: it's a false positive, purely stylistic, or theoretical with no practical impact
-> 3. For included findings, select or write the best comment text:
->    - Use Agent 1's original if it was accurate and well-written
->    - Use Agent 2's refinement if it improved the comment
->    - Write your own if neither was ideal
-> 4. Also INCLUDE any missed issues from Agent 2 that you verify as genuine.
-> 5. Calibrate tone: professional, constructive, specific. No snark. No "you should have..." phrasing.
-> 6. Adjust severity if warranted by both perspectives.
->
-> **Output the FINAL review in this exact format:**
+> **Output format:**
 >
 > ```
 > ## Final Review: {total count} findings
@@ -188,21 +136,34 @@ Spawn a `general-purpose` subagent with `model: "sonnet"`.
 > - **File:** {exact file path}
 > - **Line:** {line number in the new version of the file}
 > - **Severity:** critical | warning | nit
+> - **Verdict:** {confirmed | escalated | downgraded | refined | new}
 > - **Comment:** {final polished comment text — ready to post to GitHub as-is}
-> - **Rationale:** {one sentence on why this was included and how the two agents' perspectives were reconciled}
+> - **Rationale:** {one sentence: why this verdict, what evidence}
 > ```
 >
-> If after arbitration there are NO findings worth including, output:
+> Then list any dismissed findings separately:
+>
+> ```
+> ## Dismissed: {count} findings
+>
+> ### D{N}: {original title}
+> - **Reason:** {specific code citation or guarantee that proves this is safe}
+> ```
+>
+> If ALL findings are dismissed AND you found no new issues, output:
 > ```
 > ## Final Review: 0 findings
-> This PR looks clean. No actionable issues after adversarial review.
+> This PR looks clean after verification. No actionable issues found.
+>
+> ## Dismissed: {count} findings
+> {list each with specific dismissal reason}
 > ```
 >
 > **Bash hygiene:** Only run Bash for actual shell commands (gh, git, echo, etc.). Do ALL reasoning and analysis as plain text output — never inside bash script comments. Never write shell scripts with `#` comment blocks to think through logic. Avoid `->`, `=>`, or `>` characters (including `2>/dev/null`) inside any bash command you run. Do NOT chain commands with `;`, `&&`, or `||`. Use the **Read** tool instead of `cat`, use the **Glob** tool instead of `ls`, use the **Grep** tool instead of `grep`, `awk`, `head`, or `tail` — never run those via Bash.
 
-Wait for Agent 3 to complete. Parse its output to extract the final findings list.
+Wait for the Senior Reviewer to complete. Parse its output to extract the final findings list (R{N} items only — dismissed items are excluded from triage but preserved for the "Discuss" option).
 
-## Phase 4: Interactive Triage
+## Phase 3: Interactive Triage
 
 Present findings to the user ONE AT A TIME.
 
@@ -212,12 +173,12 @@ For each finding (R1, R2, R3...):
    - Severity badge and title
    - File path and line number
    - The proposed inline comment text
-   - The arbiter's rationale (briefly)
+   - The senior reviewer's verdict and rationale (briefly)
 
 2. **Ask the user** with `AskUserQuestion`:
    - **"Post comment"** — use the comment text exactly as-is
    - **"Edit message"** — user wants to modify the comment. After they select this, ask a follow-up question where they can type their replacement text via the "Other" option. Present the original text as a starting point.
-   - **"Discuss"** — user wants to understand this issue better before deciding. Explain the full context: what the specialized agents found (and which agent sourced it), what Agent 2 challenged, how the Arbiter ruled, and your own assessment. Then re-present the triage options.
+   - **"Discuss"** — user wants to understand this issue better before deciding. Explain the full context: what the specialized agents originally found (and which agent sourced it), the Senior Reviewer's verdict and reasoning (including any severity changes), and if the finding was refined, what changed and why. If the finding was escalated, emphasize what the specialists underestimated. Then re-present the triage options.
    - **"Discard"** — skip this finding entirely. Do not include it in the review.
 
 3. **Record the decision**: For each finding, store whether it's included and the final comment text.
@@ -227,7 +188,7 @@ If there are more than 10 findings, tell the user the total count and ask if the
 - Triage only critical + warning, auto-discard nits
 - Triage only critical, auto-discard warning + nits
 
-## Phase 5: Review Submission
+## Phase 4: Review Submission
 
 After all findings are triaged:
 
@@ -284,9 +245,9 @@ After all findings are triaged:
 
 ## Rules
 
-- NEVER submit the review without explicit user confirmation in Phase 5
-- NEVER skip phases — Phase 1 (all specialized agents), Phase 2 (Challenger), and Phase 3 (Arbiter) MUST all run
-- Phase 1 agents run in PARALLEL. Phase 2 depends on Phase 1 output. Phase 3 depends on Phase 2 output. Respect these dependencies.
+- NEVER submit the review without explicit user confirmation in Phase 4
+- NEVER skip phases — Phase 1 (all specialized agents) and Phase 2 (Senior Review) MUST both run
+- Phase 1 agents run in PARALLEL. Phase 2 depends on Phase 1 output. Respect this dependency.
 - Keep inline comments concise — aim for 1-3 sentences per comment
 - If a finding lacks a precise line number, default to the first changed line in that file
 - Escape special characters in comment text before embedding in JSON (quotes, newlines, backslashes)
