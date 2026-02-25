@@ -1,6 +1,6 @@
 ---
 name: review-pr-om
-description: Adversarial 3-agent PR review with interactive issue triage and GitHub inline comments
+description: Adversarial PR review using pr-review-toolkit specialized agents, adversarial challenge, arbitration, interactive triage, and GitHub inline comments
 argument-hint: <pr-number>
 disable-model-invocation: true
 allowed-tools: Bash(gh repo view *), Bash(gh pr view *), Bash(gh pr diff *), Bash(gh api repos/*/pulls/*/reviews), Bash(gh auth status), Bash(git log *), Bash(git blame *), Bash(git show *), Bash(git diff *), Bash(jq *), Bash(grep *), Bash(awk *), Bash(head *), Bash(tail *), Bash(wc *), Bash(cat *), Bash(ls *), Read, Grep, Glob, Task, AskUserQuestion, WebFetch
@@ -32,30 +32,46 @@ Before starting, verify:
 
 Store the HEAD SHA and repo info — you will need them for the final API call.
 
-## Phase 1: Initial Review (Agent 1 — Reviewer)
+## Phase 1: Specialized Review (Parallel Agents)
 
-Spawn a `general-purpose` subagent via the **Task** tool.
+Launch ALL pr-review-toolkit agents in parallel using the **Task** tool with `run_in_background: true`.
 
-**Prompt for Agent 1:**
+**Agents to launch:**
 
-> You are a senior code reviewer. Your job is to find real, actionable issues in PR #$ARGUMENTS.
+| Agent | `subagent_type` | `model` | Focus |
+|-------|----------------|---------|-------|
+| Code Quality | `pr-review-toolkit:code-reviewer` | sonnet | Bugs, security vulnerabilities, logic errors, API misuse, style guide compliance |
+| Silent Failures | `pr-review-toolkit:silent-failure-hunter` | sonnet | Swallowed exceptions, empty catch blocks, silent error suppression, inadequate fallbacks |
+| Test Coverage | `pr-review-toolkit:pr-test-analyzer` | sonnet | Test coverage gaps, test quality, missing edge case tests |
+| Comments | `pr-review-toolkit:comment-analyzer` | haiku | Comment accuracy, stale/misleading docs, comment rot |
+| Type Design | `pr-review-toolkit:type-design-analyzer` | haiku | Type invariants, schema design, encapsulation quality |
+| Code Simplification | `pr-review-toolkit:code-simplifier` | haiku | Unnecessary complexity, readability improvements, over-engineering |
+
+Skip `pr-review-toolkit:type-design-analyzer` if no new types or interfaces are introduced in the PR.
+
+**Prompt template for each agent:**
+
+> Review PR #$ARGUMENTS in {REPO}.
 >
-> **Step 1:** Run these commands to get context:
-> - `gh pr diff $ARGUMENTS` — full diff
-> - `gh pr view $ARGUMENTS --json body --jq .body` — PR description
-> - `gh pr view $ARGUMENTS --json files --jq '.files.[] | {path, additions, deletions}'` — changed files with stats
+> **PR description:**
+> {PR_BODY — fetch via `gh pr view $ARGUMENTS --json body --jq .body`}
 >
-> **Step 2:** Read the changed files in the repository (using Read tool) to understand surrounding context. Don't review the diff in isolation.
+> **Changed files:**
+> {CHANGED_FILES_LIST from PR Context above}
 >
-> **Step 3:** Analyze for these categories:
-> - **Bugs** — logic errors, off-by-one, null/undefined access, wrong conditions
-> - **Security** — injection, auth bypass, data exposure, unsafe deserialization
-> - **Performance** — N+1 queries, unnecessary allocations, missing indexes, blocking I/O in hot paths
-> - **Error handling** — swallowed exceptions, missing error paths, catch-all blocks
-> - **Race conditions** — shared mutable state, missing locks, TOCTOU
-> - **Edge cases** — boundary conditions, empty inputs, large inputs, unicode, timezone issues
-> - **API misuse** — wrong method signatures, deprecated usage, contract violations
-> - **Readability** — confusing names, overly complex logic, missing context for future readers
+> Get the full diff with `gh pr diff $ARGUMENTS` and read the source files using the Read tool to understand surrounding context. Do not review the diff in isolation.
+>
+> **Output format:** For EACH issue found, output:
+>
+> ```
+> ### F{N}: {one-line title}
+> - **File:** {exact file path}
+> - **Line:** {line number in the NEW version of the file}
+> - **Severity:** critical | warning | nit
+> - **Category:** {your specialty area}
+> - **Description:** {detailed explanation — what's wrong, why it matters, what could go wrong}
+> - **Suggested comment:** {the exact text to post as a GitHub inline comment — concise, constructive, specific}
+> ```
 >
 > **Do NOT flag:**
 > - Style preferences (formatting, bracket placement) unless they cause confusion
@@ -63,27 +79,19 @@ Spawn a `general-purpose` subagent via the **Task** tool.
 > - "Nit" issues that don't affect correctness or readability
 > - Things that are clearly intentional and well-reasoned
 >
-> **Step 4:** Output your findings in this exact format for EACH issue:
->
-> ```
-> ### F{N}: {one-line title}
-> - **File:** {exact file path}
-> - **Line:** {line number in the NEW version of the file}
-> - **Severity:** critical | warning | nit
-> - **Category:** {from the list above}
-> - **Description:** {detailed explanation — what's wrong, why it matters, what could go wrong}
-> - **Suggested comment:** {the exact text to post as a GitHub inline comment — concise, constructive, specific}
-> ```
->
-> If you find NO issues, say "NO_ISSUES_FOUND" and briefly explain why the PR looks good.
->
-> **Bash hygiene:** Only run Bash for actual shell commands (gh, git, echo, etc.). Do ALL reasoning and analysis as plain text output — never inside bash script comments. Never write shell scripts with `#` comment blocks to think through logic. Avoid `->`, `=>`, or `>` characters (including `2>/dev/null`) inside any bash command you run. Do NOT chain commands with `;`, `&&`, or `||`. Use the **Read** tool instead of `cat`, use the **Glob** tool instead of `ls`, use the **Grep** tool instead of `grep`, `awk`, `head`, or `tail` — never run those via Bash.
+> If you find NO issues, say "NO_ISSUES_FOUND" and briefly explain why the PR looks clean from your perspective.
 
-Wait for Agent 1 to complete. Save its full output.
+**After all agents complete — consolidate findings:**
+
+1. Collect outputs from all agents.
+2. Renumber all findings sequentially as F1, F2, F3, etc.
+3. Deduplicate — if multiple agents flagged the same issue on the same line, merge into one finding keeping the most detailed description and combining insights from both agents.
+4. Tag each finding with its source agent (e.g., "Source: code-reviewer") for traceability.
+5. Save the consolidated findings list — this is the input for Phase 2.
 
 ## Phase 2: Adversarial Challenge (Agent 2 — Challenger)
 
-Spawn a second `general-purpose` subagent.
+Spawn a `general-purpose` subagent with `model: "sonnet"`.
 
 **Prompt for Agent 2:**
 
@@ -97,7 +105,7 @@ Spawn a second `general-purpose` subagent.
 >
 > **Step 3:** For EACH finding below, argue the counter-position:
 >
-> {INSERT AGENT 1's FULL OUTPUT HERE}
+> {INSERT CONSOLIDATED FINDINGS FROM PHASE 1 HERE}
 >
 > For each finding, consider:
 > - Is this actually a problem in this specific context, or is it theoretical?
@@ -107,12 +115,12 @@ Spawn a second `general-purpose` subagent.
 > - Could the author have written it this way intentionally for a good reason?
 > - Is the suggested comment accurate and actionable, or vague/misleading?
 >
-> **Step 4:** Also independently scan for issues Agent 1 MISSED. Focus especially on:
+> **Step 4:** Also independently scan for issues the specialized agents MISSED. Focus especially on:
 > - Subtle bugs that require multi-file context
 > - Security issues that only appear when you trace data flow
 > - Edge cases that require domain knowledge
 >
-> **Step 5:** Output for EACH of Agent 1's findings:
+> **Step 5:** Output for EACH of the Phase 1 findings:
 >
 > ```
 > ### F{N}: {original title}
@@ -141,7 +149,7 @@ Wait for Agent 2 to complete. Save its full output.
 
 ## Phase 3: Arbitration (Agent 3 — Arbiter)
 
-Spawn a third `general-purpose` subagent.
+Spawn a `general-purpose` subagent with `model: "sonnet"`.
 
 **Prompt for Agent 3:**
 
@@ -151,8 +159,8 @@ Spawn a third `general-purpose` subagent.
 >
 > Run `gh pr diff $ARGUMENTS` and read the source files to form your own independent understanding.
 >
-> **Agent 1 (Reviewer) findings:**
-> {INSERT AGENT 1's FULL OUTPUT}
+> **Phase 1 (Specialized Review) consolidated findings:**
+> {INSERT CONSOLIDATED FINDINGS FROM PHASE 1}
 >
 > **Agent 2 (Challenger) analysis:**
 > {INSERT AGENT 2's FULL OUTPUT}
@@ -209,7 +217,7 @@ For each finding (R1, R2, R3...):
 2. **Ask the user** with `AskUserQuestion`:
    - **"Post comment"** — use the comment text exactly as-is
    - **"Edit message"** — user wants to modify the comment. After they select this, ask a follow-up question where they can type their replacement text via the "Other" option. Present the original text as a starting point.
-   - **"Discuss"** — user wants to understand this issue better before deciding. Explain the full context: what Agent 1 found, what Agent 2 challenged, how the Arbiter ruled, and your own assessment. Then re-present the triage options.
+   - **"Discuss"** — user wants to understand this issue better before deciding. Explain the full context: what the specialized agents found (and which agent sourced it), what Agent 2 challenged, how the Arbiter ruled, and your own assessment. Then re-present the triage options.
    - **"Discard"** — skip this finding entirely. Do not include it in the review.
 
 3. **Record the decision**: For each finding, store whether it's included and the final comment text.
@@ -277,8 +285,8 @@ After all findings are triaged:
 ## Rules
 
 - NEVER submit the review without explicit user confirmation in Phase 5
-- NEVER skip the adversarial phases — all 3 agents MUST run
-- Run agents SEQUENTIALLY (each needs the previous agent's output)
+- NEVER skip phases — Phase 1 (all specialized agents), Phase 2 (Challenger), and Phase 3 (Arbiter) MUST all run
+- Phase 1 agents run in PARALLEL. Phase 2 depends on Phase 1 output. Phase 3 depends on Phase 2 output. Respect these dependencies.
 - Keep inline comments concise — aim for 1-3 sentences per comment
 - If a finding lacks a precise line number, default to the first changed line in that file
 - Escape special characters in comment text before embedding in JSON (quotes, newlines, backslashes)
