@@ -38,14 +38,14 @@ Launch ALL pr-review-toolkit agents in parallel using the **Task** tool with `ru
 
 **Agents to launch:**
 
-| Agent | `subagent_type` | Focus |
-|-------|----------------|-------|
-| Code Quality | `pr-review-toolkit:code-reviewer` | Bugs, security vulnerabilities, logic errors, API misuse, style guide compliance |
-| Silent Failures | `pr-review-toolkit:silent-failure-hunter` | Swallowed exceptions, empty catch blocks, silent error suppression, inadequate fallbacks |
-| Test Coverage | `pr-review-toolkit:pr-test-analyzer` | Test coverage gaps, test quality, missing edge case tests |
-| Comments | `pr-review-toolkit:comment-analyzer` | Comment accuracy, stale/misleading docs, comment rot |
-| Type Design | `pr-review-toolkit:type-design-analyzer` | Type invariants, schema design, encapsulation quality |
-| Code Simplification | `pr-review-toolkit:code-simplifier` | Unnecessary complexity, readability improvements, over-engineering |
+| Agent | `subagent_type` | `model` | Focus |
+|-------|----------------|---------|-------|
+| Code Quality | `pr-review-toolkit:code-reviewer` | sonnet | Bugs, security vulnerabilities, logic errors, API misuse, style guide compliance |
+| Silent Failures | `pr-review-toolkit:silent-failure-hunter` | sonnet | Swallowed exceptions, empty catch blocks, silent error suppression, inadequate fallbacks |
+| Test Coverage | `pr-review-toolkit:pr-test-analyzer` | sonnet | Test coverage gaps, test quality, missing edge case tests |
+| Comments | `pr-review-toolkit:comment-analyzer` | haiku | Comment accuracy, stale/misleading docs, comment rot |
+| Type Design | `pr-review-toolkit:type-design-analyzer` | haiku | Type invariants, schema design, encapsulation quality |
+| Code Simplification | `pr-review-toolkit:code-simplifier` | haiku | Unnecessary complexity, readability improvements, over-engineering |
 
 Skip `pr-review-toolkit:type-design-analyzer` if no new types or interfaces are introduced in the PR.
 
@@ -91,7 +91,7 @@ Skip `pr-review-toolkit:type-design-analyzer` if no new types or interfaces are 
 
 ## Phase 2: Adversarial Challenge (Agent 2 — Challenger)
 
-Spawn a second `general-purpose` subagent.
+Spawn a `general-purpose` subagent with `model: "sonnet"`.
 
 **Prompt for Agent 2:**
 
@@ -149,7 +149,7 @@ Wait for Agent 2 to complete. Save its full output.
 
 ## Phase 3: Arbitration (Agent 3 — Arbiter)
 
-Spawn a third `general-purpose` subagent.
+Spawn a `general-purpose` subagent with `model: "sonnet"`.
 
 **Prompt for Agent 3:**
 
