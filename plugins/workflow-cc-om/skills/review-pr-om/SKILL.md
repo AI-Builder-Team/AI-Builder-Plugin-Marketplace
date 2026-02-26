@@ -40,12 +40,12 @@ Launch ALL pr-review-toolkit agents in parallel using the **Task** tool with `ru
 
 | Agent | `subagent_type` | `model` | Focus |
 |-------|----------------|---------|-------|
-| Code Quality | `pr-review-toolkit:code-reviewer` | sonnet | Bugs, security vulnerabilities, logic errors, API misuse, style guide compliance |
-| Silent Failures | `pr-review-toolkit:silent-failure-hunter` | sonnet | Swallowed exceptions, empty catch blocks, silent error suppression, inadequate fallbacks |
-| Test Coverage | `pr-review-toolkit:pr-test-analyzer` | sonnet | Test coverage gaps, test quality, missing edge case tests |
-| Comments | `pr-review-toolkit:comment-analyzer` | sonnet | Comment accuracy, stale/misleading docs, comment rot |
-| Type Design | `pr-review-toolkit:type-design-analyzer` | sonnet | Type invariants, schema design, encapsulation quality |
-| Code Simplification | `pr-review-toolkit:code-simplifier` | sonnet | Unnecessary complexity, readability improvements, over-engineering |
+| Code Quality | `pr-review-toolkit:code-reviewer` | haiku | Bugs, security vulnerabilities, logic errors, API misuse, style guide compliance |
+| Silent Failures | `pr-review-toolkit:silent-failure-hunter` | haiku | Swallowed exceptions, empty catch blocks, silent error suppression, inadequate fallbacks |
+| Test Coverage | `pr-review-toolkit:pr-test-analyzer` | haiku | Test coverage gaps, test quality, missing edge case tests |
+| Comments | `pr-review-toolkit:comment-analyzer` | haiku | Comment accuracy, stale/misleading docs, comment rot |
+| Type Design | `pr-review-toolkit:type-design-analyzer` | haiku | Type invariants, schema design, encapsulation quality |
+| Code Simplification | `pr-review-toolkit:code-simplifier` | haiku | Unnecessary complexity, readability improvements, over-engineering |
 
 Skip `pr-review-toolkit:type-design-analyzer` if no new types or interfaces are introduced in the PR.
 
