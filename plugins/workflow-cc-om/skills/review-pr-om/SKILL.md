@@ -211,35 +211,65 @@ After all findings are triaged:
    - **"Write custom"** — user provides their own review body via the "Other" option
    - **"No body"** — submit with inline comments only, no top-level body
 
-4. **Build and submit the review** using a single `gh api` call:
+4. **Validate all line numbers locally before submitting.** Run the diff through this Python snippet and remap any out-of-range lines to the last line of the nearest hunk in that file. Do this entirely locally — never make API calls to test individual line numbers.
+
+   ```bash
+   gh pr diff {PR_NUMBER} | python3 -c "
+   import sys, re, json
+
+   current_file = None
+   valid_ranges = {}
+
+   for line in sys.stdin:
+       line = line.rstrip()
+       if line.startswith('+++ b/'):
+           current_file = line[6:]
+           valid_ranges[current_file] = []
+       elif line.startswith('@@ '):
+           m = re.match(r'@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@', line)
+           if m:
+               start = int(m.group(1))
+               count = int(m.group(2)) if m.group(2) else 1
+               if current_file:
+                   valid_ranges[current_file].append((start, start + count - 1))
+
+   with open('/tmp/pr_review.json') as f:
+       payload = json.load(f)
+
+   for c in payload['comments']:
+       ranges = valid_ranges.get(c['path'], [])
+       if not any(s <= c['line'] <= e for s, e in ranges):
+           # Remap to the end of the last hunk in this file
+           if ranges:
+               c['line'] = ranges[-1][1]
+               print(f'REMAPPED {c[\"path\"]}:{c[\"line\"]} -> {ranges[-1][1]}', file=sys.stderr)
+           else:
+               print(f'SKIP {c[\"path\"]}:{c[\"line\"]} (file not in diff)', file=sys.stderr)
+
+   with open('/tmp/pr_review.json', 'w') as f:
+       json.dump(payload, f)
+   "
+   ```
+
+   After running validation, review any REMAPPED/SKIP lines printed to stderr and adjust comment text if the remap changed the target line significantly.
+
+5. **Build and submit the review** using a single `gh api` call:
 
    ```bash
    # Construct the JSON payload with ALL inline comments and submit in ONE call
    gh api repos/{owner}/{repo}/pulls/{pr_number}/reviews \
      --method POST \
-     --input - <<'EOF'
-   {
-     "commit_id": "{HEAD_SHA}",
-     "body": "{review body or empty string}",
-     "event": "{APPROVE|REQUEST_CHANGES|COMMENT}",
-     "comments": [
-       {
-         "path": "{file}",
-         "line": {line_number},
-         "side": "RIGHT",
-         "body": "{comment text}"
-       }
-     ]
-   }
-   EOF
+     --input /tmp/pr_review.json
    ```
 
-   **CRITICAL:** The `line` field must be the line number as it appears in the NEW version of the file (right side of the diff). This is what the agents report. The `side` should always be `"RIGHT"` unless commenting on a deleted line.
+   Write the payload to `/tmp/pr_review.json` using Python (`json.dump`) rather than shell heredoc to avoid escaping issues with quotes, newlines, and backslashes in comment text.
 
-5. **Confirm success** — show the user the review URL from the API response.
+   **CRITICAL:** The `line` field must be the line number as it appears in the NEW version of the file (right side of the diff). The `side` should always be `"RIGHT"` unless commenting on a deleted line.
 
-6. If the API call fails:
-   - If 422 (validation error): likely a line number mapping issue. Show the error, offer to submit as a top-level comment instead.
+6. **Confirm success** — show the user the review URL from the API response.
+
+7. If the API call fails:
+   - If 422 (validation error): Re-run the local diff validation from step 4 to identify which line(s) are still out of range, remap them, and retry **once**. **NEVER test individual comments by submitting them as separate API reviews** — submitted reviews cannot be deleted and will appear as noise on the PR.
    - If 401/403: authentication issue. Tell the user to run `gh auth status` and re-authenticate.
    - If the error mentions "commit_id": the HEAD may have changed. Re-fetch with `gh pr view $ARGUMENTS --json headRefOid --jq .headRefOid`.
 
@@ -250,5 +280,7 @@ After all findings are triaged:
 - Phase 1 agents run in PARALLEL. Phase 2 depends on Phase 1 output. Respect this dependency.
 - Keep inline comments concise — aim for 1-3 sentences per comment
 - If a finding lacks a precise line number, default to the first changed line in that file
-- Escape special characters in comment text before embedding in JSON (quotes, newlines, backslashes)
+- Write the JSON payload with Python `json.dump` to `/tmp/pr_review.json` — never use shell heredoc, which mishandles quotes and backslashes in comment text
+- Always run local diff validation (Phase 4 step 4) before submitting — validate line numbers against hunk ranges from `gh pr diff`, never by making test API calls
+- **NEVER submit individual comments as separate reviews to test line validity** — submitted reviews cannot be deleted and pollute the PR with noise
 - If the user says "stop" or "cancel" at any point during triage, abort the workflow gracefully
