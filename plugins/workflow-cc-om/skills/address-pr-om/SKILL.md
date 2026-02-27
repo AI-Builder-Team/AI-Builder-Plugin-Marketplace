@@ -2,7 +2,7 @@
 name: address-pr-om
 description: Respond to PR review comments (valid/invalid), fix valid issues, and reply with the fix commit SHA
 argument-hint: <pr-number>
-allowed-tools: Bash(gh repo view *), Bash(gh pr view *), Bash(gh pr diff *), Bash(gh api repos/*/pulls/*/comments), Bash(gh api repos/*/pulls/*/comments/*/replies), Bash(gh api repos/*/pulls/*/reviews), Bash(gh api repos/*/issues/*/comments), Bash(gh auth status), Bash(git add *), Bash(git commit *), Bash(git push *), Bash(git rev-parse *), Bash(git log *), Bash(git diff *), Bash(jq *), Read, Grep, Glob, Edit, Write, AskUserQuestion
+allowed-tools: Bash(gh repo view *), Bash(gh pr view *), Bash(gh pr diff *), Bash(gh api repos/*/pulls/*/comments), Bash(gh api repos/*/pulls/*/comments/*/replies), Bash(gh api repos/*/pulls/*/reviews), Bash(gh api repos/*/issues/*/comments), Bash(gh api repos/*/issues/*/comments/*), Bash(gh auth status), Bash(git add *), Bash(git commit *), Bash(git push *), Bash(git rev-parse *), Bash(git log *), Bash(git diff *), Bash(jq *), Read, Grep, Glob, Edit, Write, AskUserQuestion
 ---
 
 # Address PR Review Comments
@@ -43,12 +43,17 @@ gh api repos/OWNER/REPO/pulls/$ARGUMENTS/comments --jq '[.[] | {id: .id, path: .
 gh api repos/OWNER/REPO/pulls/$ARGUMENTS/reviews --jq '[.[] | {id: .id, user: .user.login, body: .body, state: .state, submitted_at: .submitted_at}]'
 ```
 
+```bash
+gh api repos/OWNER/REPO/issues/$ARGUMENTS/comments --jq '[.[] | {id: .id, body: .body, user: .user.login, created_at: .created_at}]'
+```
+
 **Process the data:**
 - From inline comments: keep only **root comments** (where `in_reply_to_id` is null). Replies are context, not actionable items.
 - From reviews: keep only reviews with a substantive body (skip empty bodies and bare "LGTM" / "Approved").
-- Build the working list: all root inline comments + substantive review bodies.
+- From top-level PR comments (issue comments): keep only comments from users **other than the PR author** that have a substantive body (skip empty bodies, bare "LGTM" / "Approved", and bot-generated comments). These are general review comments posted outside of inline code review.
+- Build the working list: all root inline comments + substantive review bodies + substantive top-level PR comments.
 
-If there are NO root inline comments AND NO reviews with substantive body text:
+If there are NO root inline comments AND NO reviews with substantive body text AND NO substantive top-level PR comments:
 > "No review feedback found on PR #$ARGUMENTS. Nothing to address."
 
 Stop here.
@@ -83,6 +88,7 @@ Draft a short 1-2 sentence reply for each:
 ```
 
 For review body items without a line number, use the format `{file} (review body)` or `(top-level review)`.
+For top-level PR comments (issue comments), use the format `(PR comment)`.
 
 If there are ONLY invalid items and nothing to fix, proceed through Phase 2 (post replies) but skip Phase 3 (no fixes needed). Print a note to that effect.
 
@@ -107,6 +113,11 @@ gh api repos/OWNER/REPO/pulls/$ARGUMENTS/comments/{comment_id}/replies --method 
 For each **review body** item:
 ```bash
 gh api repos/OWNER/REPO/issues/$ARGUMENTS/comments --method POST --field body="Re: @{reviewer}'s review — {reply}"
+```
+
+For each **top-level PR comment** (issue comment), post a new issue comment as a reply (GitHub doesn't support threading on issue comments, so reference the reviewer and quote a snippet for context):
+```bash
+gh api repos/OWNER/REPO/issues/$ARGUMENTS/comments --method POST --field body="Re: @{reviewer}'s comment — {reply}"
 ```
 
 Print `Replied to {N} comments.` when done.
@@ -161,7 +172,7 @@ For each VALID item that was fixed:
   gh api repos/OWNER/REPO/pulls/$ARGUMENTS/comments/{comment_id}/replies --method POST --field body="Fixed in {FIX_SHA}."
   ```
 
-- If it was a **review body**, post a new top-level comment:
+- If it was a **review body** or **top-level PR comment**, post a new top-level comment:
   ```bash
   gh api repos/OWNER/REPO/issues/$ARGUMENTS/comments --method POST --field body="Fixed in {FIX_SHA} — addressed @{reviewer}'s concern about {brief topic}."
   ```
