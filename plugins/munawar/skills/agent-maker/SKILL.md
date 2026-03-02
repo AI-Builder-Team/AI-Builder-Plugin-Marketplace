@@ -176,6 +176,23 @@ Rule of thumb: if the agent needs to *understand* code, use `opus`. If it just n
 
 ---
 
+### Pattern 5b: Portable Script Paths
+
+When an agent references bundled scripts or resources, use `${CLAUDE_PLUGIN_ROOT}` for all paths. Claude Code substitutes this at runtime with the plugin's actual install directory.
+
+```markdown
+# In agent body — portable:
+Run the validation script:
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/validate.py "$FILE"
+
+# NOT portable (breaks when installed as plugin):
+python3 ~/.claude/agents/my-agent/scripts/validate.py "$FILE"
+```
+
+This applies to any path in bash commands, script references, or resource file paths within agent markdown files.
+
+---
+
 ### Pattern 6: Tool Whitelisting
 
 Restrict what an agent can do by listing only the tools it needs. This prevents scope creep and accidental side effects.

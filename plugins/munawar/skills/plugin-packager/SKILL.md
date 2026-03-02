@@ -20,15 +20,15 @@ Parse the user's natural language request to extract:
 
 - **Source directory**: Where the components live. Could be a `.claude/` directory, a standalone folder, or any path. If not mentioned, default to `.claude/` in the current project.
 - **Plugin name**: The kebab-case name for the plugin (becomes the namespace, e.g., `/plugin-name:command`). If not mentioned, infer from the source directory name or the dominant component names.
-- **Target directory**: Where to create the plugin. If not mentioned, default to `./plugins/<plugin-name>` if a marketplace is involved, otherwise `./<plugin-name>`.
-- **Marketplace**: Whether to register in a marketplace, and if so, its path. Look for mentions of "marketplace", "register", "add to marketplace", etc.
+- **Target plugin**: Where the component should land. Before assuming a new standalone plugin, check the source path for ownership signals — if the source is under `~/.claude/skills/` or `~/.claude/agents/`, that's a personal component. List the existing plugins in the marketplace and see if one already belongs to the same user. Match by username in the path, plugin author, or existing skill patterns. If a match is found, the target is that plugin's directory (e.g., `./plugins/munawar/skills/<skill-name>`), not a new standalone plugin. If no match is found or ownership is genuinely unclear, ask the user: "Should this go into an existing plugin or a new standalone one?" Only default to `./plugins/<plugin-name>` when you're confident it's a new plugin with no existing home.
+- **Marketplace**: Whether to register in a marketplace, and if so, its path. Look for mentions of "marketplace", "register", "add to marketplace", etc. Note: if packaging into an existing plugin, the marketplace entry already exists — update the version, don't add a duplicate.
 - **Component filter**: Whether the user wants all components or only specific ones. Look for mentions like "just the skills", "only the agents named X and Y", "skip hooks", etc. If not mentioned, include everything found.
 - **Description**: Any description for the plugin. If not mentioned, generate one from the contents.
 - **Version**: Auto-detected from existing plugin (see Step 1.5). Only override if the user specifies an explicit version.
 - **Author**: If mentioned, use it. Otherwise leave as the user's name or omit.
 - **Copy vs Move**: Default to copy. Only move if the user explicitly says "move" or "migrate".
 
-If something critical is ambiguous (e.g., the source directory could be multiple things), ask the user to clarify before proceeding. Do NOT guess when the answer matters.
+If something critical is ambiguous (e.g., the source directory could be multiple things, or it's unclear whether this belongs to an existing plugin), ask the user before proceeding. Do NOT guess when the answer matters — a wrong target directory means rework.
 
 ## Step 1: Validate source directory
 
@@ -219,6 +219,7 @@ After all operations:
 - **Agents are flat `.md` files** in the agents/ directory.
 - **Hooks go in `hooks/hooks.json`**, not inside `.claude-plugin/`.
 - **All paths in hooks/MCP configs should use `${CLAUDE_PLUGIN_ROOT}`** for portability. If you find hardcoded absolute paths in hook commands or MCP server configs during the copy, replace them with `${CLAUDE_PLUGIN_ROOT}/...` relative equivalents.
+- **Check all component files for generic paths** as a discrete step after copying. Scan SKILL.md, agent .md, and command .md files for hardcoded paths like `~/.claude/skills/...`, `~/.claude/scripts/...`, or any absolute path. Replace them with `${CLAUDE_PLUGIN_ROOT}/...` equivalents. This applies to bash commands in skills, script references in agents, and any path a user might have written for personal use that now needs to be portable.
 - **Preserve file permissions** on scripts.
 - Default to `cp` (copy). Only use `mv` (migrate) if the user explicitly asks to move/migrate. If moving, remove the source directory afterward only if fully emptied.
 - If the source directory also contains `settings.json`, `settings.local.json`, or `CLAUDE.md`, do NOT copy/move those -- they are project config, not plugin components. Leave them in place.

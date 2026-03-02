@@ -21,9 +21,9 @@
       "name": "m",
       "source": "./plugins/munawar",
       "description": "Personal developer toolkit - Git worktree management, PR workflows, code quality, issue triage, plugin packaging, web research, and writing tools",
-      "version": "3.1.1",
+      "version": "4.0.0",
       "category": "development",
-      "tags": ["git", "pr-review", "code-quality", "issue-triage", "plugin-packaging", "web-research", "dev-tools", "agent-maker"]
+      "tags": ["git", "pr-review", "code-quality", "issue-triage", "plugin-packaging", "web-research", "dev-tools", "agent-maker", "session-audit"]
     },
     {
       "name": "workflow-cc-om",
