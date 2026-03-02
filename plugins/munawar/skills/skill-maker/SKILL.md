@@ -18,15 +18,51 @@ Skills live in one of two locations:
 - **Global skills**: `~/.claude/skills/` - Available in all projects
 - **Project skills**: `<project>/.claude/skills/` - Project-specific
 
-Each skill is a directory containing a `SKILL.md` file:
+Each skill is a directory containing a `SKILL.md` file, and optionally helper scripts and reference docs:
 ```
 ~/.claude/skills/
 ├── my-skill/
 │   └── SKILL.md
 ├── another-skill/
-│   └── SKILL.md
+│   ├── SKILL.md
+│   ├── scripts/          # Helper scripts live here
+│   │   └── helper.py
+│   └── reference.md      # Optional detailed docs
 └── README.md
 ```
+
+### Bundling Scripts with Skills
+
+When a skill needs helper scripts (Python utilities, shell scripts, etc.), place them in a `scripts/` subdirectory alongside SKILL.md. This keeps the skill self-contained and portable.
+
+**Structure:**
+```
+~/.claude/skills/my-skill/
+├── SKILL.md
+└── scripts/
+    ├── fetch_data.py
+    └── transform.sh
+```
+
+**Reference them in SKILL.md** with markdown links so Claude knows they exist and can Read them on demand:
+```markdown
+## Supporting Files
+See [scripts/fetch_data.py](scripts/fetch_data.py) for the data fetcher.
+```
+
+Note on loading behavior — there are three tiers:
+- **SKILL.md content**: fully injected into context on every invocation
+- **Markdown-linked files**: Claude sees the link text but must explicitly `Read` the file — useful for large reference docs, API specs, or scripts that Claude may need to inspect
+- **Unlisted files in the skill dir**: Claude won't know they exist unless it searches
+
+So put essential instructions directly in SKILL.md. Use linked files for things Claude *might* need to reference but shouldn't pay the context cost for on every run.
+
+**Execute bundled scripts in Bash commands** using the full path:
+```bash
+uv run --with some-package python ~/.claude/skills/my-skill/scripts/fetch_data.py "$URL"
+```
+
+This pattern is useful when your skill wraps a reusable utility — the script travels with the skill, and the SKILL.md stays lean and focused on orchestration instructions.
 
 ### SKILL.md Format
 
@@ -101,6 +137,8 @@ Running `/migrate-component SearchBar React Vue` gives:
 - `$0` = SearchBar
 - `$1` = React
 - `$2` = Vue
+
+**Limitation — no "rest of args" syntax:** `$N` always resolves to a single word. There is no built-in way to get "everything after the first argument" as one string. If your skill takes an ID plus a free-form instruction (e.g. `/audit abc123 show me all the errors`), use `$0` for the ID where you need it (like in a script call), and `$ARGUMENTS` where you need the full string. Claude will see both and naturally understand the structure from context — no parsing instructions needed.
 
 ### Dynamic Context with Commands
 
@@ -193,7 +231,30 @@ Requirements:
 - Documentation comments
 ```
 
-**4. Pure Command Skill (no AI invocation):**
+**4. Skill with Bundled Scripts:**
+```yaml
+---
+name: research-tool
+description: Fetch and save web content for research
+argument-hint: "[url] [topic-name]"
+---
+
+Fetch content from $0 and save it under the topic "$1".
+
+## Supporting Files
+See [scripts/fetch_content.py](scripts/fetch_content.py) for the content fetcher.
+
+## Steps
+1. Run the bundled script:
+   ```bash
+   uv run --with requests python ~/.claude/skills/research-tool/scripts/fetch_content.py "$0" "/tmp/research/$1"
+   ```
+2. Read the saved output and summarize key points
+```
+
+The script lives at `~/.claude/skills/research-tool/scripts/fetch_content.py` — self-contained, travels with the skill.
+
+**5. Pure Command Skill (no AI invocation):**
 ```yaml
 ---
 name: quick-status
@@ -217,6 +278,7 @@ disable-model-invocation: true
 5. **Document in skill content** - Explain what the skill does
 6. **Use arguments for flexibility** - Make skills reusable
 7. **Test with various inputs** - Ensure argument handling works
+8. **Bundle helper scripts in `scripts/`** - Keep skills self-contained; reference via markdown links in SKILL.md
 
 ### Testing Your Skill
 
@@ -239,7 +301,8 @@ Now, based on the request "$ARGUMENTS", create a new skill:
 4. **Write skill prompt** - Clear instructions for Claude
 5. **Add argument handling** - Use `$ARGUMENTS` or positional vars if needed
 6. **Create the skill** - Write to `~/.claude/skills/[skill-name]/SKILL.md`
-7. **Provide usage example** - Show how to invoke it
+7. **Bundle any helper scripts** - If the skill needs utilities (Python scripts, shell scripts), put them in `[skill-name]/scripts/` and reference via markdown links in SKILL.md
+8. **Provide usage example** - Show how to invoke it
 
 Ask clarifying questions if the request is ambiguous. Otherwise, proceed to create the skill.
 
