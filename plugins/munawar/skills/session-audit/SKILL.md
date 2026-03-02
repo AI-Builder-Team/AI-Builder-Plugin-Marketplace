@@ -1,5 +1,5 @@
 ---
-name: session-audit
+name: "m:session-audit"
 description: Parse and audit Claude Code session transcripts
 argument-hint: "<session-id> [instruction]"
 ---
