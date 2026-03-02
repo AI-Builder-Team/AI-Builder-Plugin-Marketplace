@@ -1,9 +1,9 @@
 {
   "name": "m",
   "description": "Personal developer toolkit - Git worktree management, PR workflows, code quality, issue triage, plugin packaging, web research, humanizer, UI shell migration, and codebase navigation",
-  "version": "2.4.0",
+  "version": "3.0.0",
   "author": {
     "name": "Munawar Shah"
   },
-  "keywords": ["git", "pr-review", "code-quality", "issue-triage", "plugin-packaging", "web-research", "humanizer", "dev-tools", "ui-checker", "shell-migrate"]
+  "keywords": ["git", "pr-review", "code-quality", "issue-triage", "plugin-packaging", "web-research", "humanizer", "dev-tools", "ui-checker", "shell-migrate", "agent-maker"]
 }
