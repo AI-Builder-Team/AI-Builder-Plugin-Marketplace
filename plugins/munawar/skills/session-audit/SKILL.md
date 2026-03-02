@@ -1,5 +1,5 @@
 ---
-name: session-audit
+name: "m:session-audit"
 description: Parse and audit Claude Code session transcripts
 argument-hint: "<session-id> [instruction]"
 ---
@@ -47,7 +47,19 @@ grep -rl "$0" ~/.claude/projects/*/  2>/dev/null | head -5
 
 Use the resolved JSONL path from step 1. The `JSONL` placeholder below means the path returned by resolve.
 
-If no instruction was provided, run all three reports (stats, conversation, errors). Otherwise, use your judgment to pick whatever combination of the tools below best answers the instruction. Run as many times as needed to get to the answer.
+If a specific instruction was provided, use your judgment to pick whatever combination of the tools below best answers it. Run as many times as needed.
+
+If no instruction was provided (or the instruction does not override this default), perform a **lessons-learned audit**:
+1. Run stats, errors, and conversation (with `--no-thinking --max-len 500`) on the main session
+2. Run errors on each subagent session
+3. Focus your analysis on identifying:
+   - Points where the user had to clarify direction or redirect the agent
+   - Places where the agent floundered, retried, or took a wrong path before finding the right approach
+   - Tool/script errors and how they were resolved (or not)
+   - Moments where the agent recovered from uncertainty and what triggered the recovery
+4. For each finding, note whether any skills, agents, or commands were involved
+5. Derive concise, actionable lessons — generic rules that could be baked into the relevant skill, agent, or system prompt so future sessions arrive at the right outcome more directly
+6. Lessons must NOT make any skill or agent less generic or less able to function across varied contexts — they should improve precision without narrowing scope
 
 ### Available reports
 
@@ -123,11 +135,12 @@ Prefix each subagent report with its filename so the user can tell them apart.
 
 ### Step 4: Summarize
 
-Provide a concise summary that directly answers the instruction. If no instruction was given, cover:
-- What the session was about, duration, turn count, token usage
-- Tool usage patterns, errors, retries, self-corrections
-- Subagent activity (if any)
-- Overall health assessment
+Provide a concise summary that directly answers the instruction. If running the default lessons-learned audit, present findings and lessons in whatever format best fits the session's content.
+
+Constraints on lessons:
+- Must not reduce the generality or flexibility of any skill/agent
+- Must improve directness of future execution without over-fitting to this session's specifics
+- If no meaningful lessons exist, say so — do not fabricate improvements
 
 ## JSONL Schema Reference
 

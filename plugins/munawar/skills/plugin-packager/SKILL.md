@@ -223,3 +223,4 @@ After all operations:
 - **Preserve file permissions** on scripts.
 - Default to `cp` (copy). Only use `mv` (migrate) if the user explicitly asks to move/migrate. If moving, remove the source directory afterward only if fully emptied.
 - If the source directory also contains `settings.json`, `settings.local.json`, or `CLAUDE.md`, do NOT copy/move those -- they are project config, not plugin components. Leave them in place.
+- **Skill names MUST use the plugin name prefix.** Every `SKILL.md` frontmatter `name:` field must be prefixed with `<plugin-name>:` where `<plugin-name>` is the `name` field from the plugin's `plugin.json` (e.g., if `plugin.json` has `"name": "m"`, then skills are `m:skill-name`; if `"name": "klair-legacy"`, then `klair-legacy:skill-name`). During packaging, read `plugin.json` to get the plugin name, then check each skill's `name:` field — if the prefix is missing, add it. This ensures skills are namespaced correctly when installed.
