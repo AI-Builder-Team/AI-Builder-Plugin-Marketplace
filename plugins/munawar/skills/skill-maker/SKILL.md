@@ -64,6 +64,20 @@ uv run --with some-package python ~/.claude/skills/my-skill/scripts/fetch_data.p
 
 This pattern is useful when your skill wraps a reusable utility — the script travels with the skill, and the SKILL.md stays lean and focused on orchestration instructions.
 
+### Portable Paths for Plugin Skills
+
+When a skill will be distributed as part of a plugin, use `${CLAUDE_PLUGIN_ROOT}` for all script and resource paths. Claude Code substitutes this with the plugin's actual install directory at runtime.
+
+```bash
+# Plugin-portable path:
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/my-skill/scripts/fetch_data.py "$URL"
+
+# Personal skill path (non-portable):
+python3 ~/.claude/skills/my-skill/scripts/fetch_data.py "$URL"
+```
+
+`${CLAUDE_PLUGIN_ROOT}` works in SKILL.md bash commands, hooks, MCP configs, and executed scripts. It is **not** a shell environment variable — it resolves only within Claude Code's plugin context.
+
 ### SKILL.md Format
 
 Every skill needs a `SKILL.md` with frontmatter and content:
