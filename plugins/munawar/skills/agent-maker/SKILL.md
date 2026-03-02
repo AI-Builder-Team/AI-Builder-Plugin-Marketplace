@@ -121,19 +121,42 @@ description: "...
 
 ### Pattern 4: Proxy Agent (Agent-Wraps-Skill)
 
-When the real logic lives in a skill, create a thin agent whose only job is to invoke that skill. The agent's body is minimal — just "call the Skill tool." The skill handles everything.
+When the real logic lives in a skill, create a thin agent whose only job is to invoke that skill. Skills can't be launched as subagents directly — the proxy bridges the gap.
 
-This pattern exists because skills can't be launched as subagents directly, but agents can. The proxy bridges the gap.
+**The prompt alignment problem:** Subagents weight the caller's prompt more heavily than their system prompt. If the raw user message is trivially answerable ("whats today"), smaller models will answer literally and never call the Skill tool. The fix is forcing the caller to rewrite the prompt so the only sensible response is a tool call.
 
+**Three mandatory pieces for every proxy agent:**
+
+**1. CALLER INSTRUCTIONS in the description** — tells the main agent how to write the prompt:
 ```yaml
-# pr-reader-alt-agent body (entire thing):
-You are a skill invocation agent. Your ONLY job is to call the Skill
-tool to invoke `/m:pr-reader` and relay its result.
-
-## CRITICAL RULES
-- You MUST use the Skill tool with `skill: "m:pr-reader"` as your FIRST action.
-- You MUST NOT run `gh` commands, fetch PR data, or write scripts yourself.
+description: "...
+  CALLER INSTRUCTIONS — how to write the prompt:
+  The prompt MUST begin with 'Invoke the {skill} skill for:' followed by
+  the user's intent. This framing ensures the subagent calls the Skill tool
+  instead of answering literally. Do NOT forward the user's raw message
+  as a bare question."
 ```
+
+**2. Examples showing the prompt transformation** — in the description:
+```yaml
+description: "...
+  - user: \"What's on my plate today?\"
+    <launches agent with prompt: \"Invoke the todoist-v2 skill for: whats today\">
+  - user: \"Reschedule overdue tasks\"
+    <launches agent with prompt: \"Invoke the todoist-v2 skill for: reschedule overdue tasks\">"
+```
+
+**3. CRITICAL RULES in the body** — the non-negotiable gate:
+```markdown
+## CRITICAL RULES
+1. You MUST use the Skill tool with `skill: "{skill}"` as your FIRST action.
+2. Pass the caller's instructions as the `args` parameter.
+3. You MUST NOT answer the user's question yourself.
+4. You MUST NOT use MCP tools or call APIs directly.
+5. After the skill executes, relay its output back concisely.
+```
+
+Without all three pieces, the agent will intermittently fail — especially on haiku/sonnet with short prompts.
 
 **When to use:** When a skill already does the work and you need it callable as a subagent from orchestration flows.
 
