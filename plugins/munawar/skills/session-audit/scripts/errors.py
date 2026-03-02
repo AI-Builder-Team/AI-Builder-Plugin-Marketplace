@@ -101,27 +101,10 @@ def main():
                             "error": str(result)[:400],
                         })
 
-            # Check toolUseResult for error keywords
-            tool_result = r.get("toolUseResult")
-            if tool_result:
-                result_str = str(tool_result)
-                if any(kw in result_str for kw in ["Error", "error", "FAILED", "failed", "Exception", "Traceback"]):
-                    tool_result_dict = tool_result if isinstance(tool_result, dict) else {}
-                    call_info = ""
-                    if isinstance(tool_result_dict, dict):
-                        # Try common patterns in toolUseResult
-                        fp = tool_result_dict.get("filePath", "")
-                        if fp:
-                            call_info = f"file={fp}"
-                    tool_errors.append({
-                        "line": line_num,
-                        "turn": turn,
-                        "tool_use_id": "via-toolUseResult",
-                        "tool_name": call_info or "?",
-                        "tool_input": "",
-                        "call_line": None,
-                        "error": result_str[:400],
-                    })
+            # toolUseResult records don't carry is_error — real errors
+            # surface through content blocks with is_error=true (handled above).
+            # Keyword-matching toolUseResult.stdout causes false positives when
+            # output merely *discusses* errors (e.g. auditing another session).
 
         elif t == "assistant":
             msg = r.get("message", {})
