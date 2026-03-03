@@ -29,19 +29,26 @@ If the user asks to open an editor or start an AI tool, **do not execute it**. I
 - gtr installed: !`git gtr version 2>/dev/null || echo "NOT INSTALLED — install via: brew tap coderabbitai/tap && brew install git-gtr"`
 - Highest numbered local branches: !`git branch | grep -E '^ *[0-9]+' | sed 's/^[ *]*//' | sort -t'-' -k1 -n | tail -5 2>/dev/null || echo "No numbered branches found"`
 
-## Branch Naming Convention — MANDATORY for new branches
+## Branch & Folder Naming
 
-When **creating a NEW branch** (not checking out an existing one), you MUST apply a numeric prefix:
-
+<when condition="creating a NEW branch that does NOT exist locally or on remote">
+### Numeric prefix — MANDATORY
 1. Look at the "Highest numbered local branches" context above to find the current highest number
 2. Pick the next sequential number (e.g. if highest is `023-...`, next is `024-...`)
 3. Format: `NNN-<short-description>` (zero-padded to 3 digits)
 4. Apply this prefix to whatever name the user provided. E.g. if user says "renewals-ui-fixes" and next number is 024, create branch `024-renewals-ui-fixes`
+5. Do NOT use `--folder` — let gtr derive the folder name from the numbered branch name automatically
 
-**This does NOT apply when:**
-- The user provides a branch name that already has a numeric prefix (e.g. `024-something`)
-- The user is checking out an existing branch (not creating a new one)
-- The user explicitly says to skip numbering
+**Skip numbering if:** the user already included a numeric prefix, or explicitly says to skip.
+</when>
+
+<when condition="checking out an EXISTING branch (found locally or on remote)">
+### No renaming — use defaults
+- Do NOT apply the numeric naming convention to the branch or folder
+- Do NOT use `--folder` to override the folder name
+- Let gtr auto-derive the folder name from the existing branch name
+- Just run: `git gtr new <existing-branch> --no-hooks --yes`
+</when>
 
 ## User's Request
 $ARGUMENTS
