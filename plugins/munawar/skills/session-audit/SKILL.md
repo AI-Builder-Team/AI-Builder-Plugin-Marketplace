@@ -142,6 +142,14 @@ Constraints on lessons:
 - Must improve directness of future execution without over-fitting to this session's specifics
 - If no meaningful lessons exist, say so — do not fabricate improvements
 
+## Plugin Cache vs Source — editing rule
+
+When a lesson involves editing a skill, agent, or command file, you MUST check whether the file path is a **cached copy** or the **canonical source** before proposing or making edits.
+
+1. **Cache detection**: Any path containing `/.claude/plugins/cache/` is a read-only installed copy. NEVER edit these files — changes will be overwritten on next install/update.
+2. **Source resolution**: If the current working directory is the plugin marketplace repo (look for `.claude-plugin/marketplace.json` at the project root), the source lives under `plugins/` in the current project. Map from the cache path: `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/skills/<skill>/` → `<cwd>/plugins/<author>/skills/<skill>/`.
+3. **Fallback when source is not local**: If the current project is NOT the marketplace repo, do NOT guess the source location. Instead, tell the user the file needs to be updated at its source and ask them to either point you to the marketplace repo or confirm they want a local copy. If making a local copy, place it in `~/.claude/skills/<skill-name>-local/` (suffix `-local` to distinguish from the plugin version).
+
 ## JSONL Schema Reference
 
 Each line is a JSON object with a `type` field:
