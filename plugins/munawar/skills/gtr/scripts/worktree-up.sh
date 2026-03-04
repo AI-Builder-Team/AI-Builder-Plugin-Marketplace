@@ -19,30 +19,24 @@
 # Prerequisites:
 #   - git gtr installed (brew tap coderabbitai/tap && brew install git-gtr)
 #
-# Configuration (env vars or .worktree-up.conf in repo root):
-#   BACKEND_DIR       — subdirectory for backend (default: backend)
-#   BACKEND_CMD       — command to start backend (default: python -m uvicorn main:app)
-#   FRONTEND_DIR      — subdirectory for frontend (default: frontend)
-#   FRONTEND_CMD      — command to start frontend (default: pnpm dev)
-#   FRONTEND_ENV_VAR  — env var to point frontend at backend URL (default: VITE_API_URL)
+# Configuration (git config under gtr.worktree-up.*):
+#   git config gtr.worktree-up.backend-dir "backend"
+#   git config gtr.worktree-up.backend-cmd "python -m uvicorn main:app"
+#   git config gtr.worktree-up.frontend-dir "frontend"
+#   git config gtr.worktree-up.frontend-cmd "pnpm dev"
+#   git config gtr.worktree-up.frontend-env-var "VITE_API_URL"
 
 set -euo pipefail
 
-# ── Configuration ─────────────────────────────────────────────────
+# ── Configuration (from git config) ──────────────────────────────
 
-# Load config from .worktree-up.conf in the repo root (if it exists)
-_repo_root=$(git rev-parse --show-toplevel 2>/dev/null || true)
-if [[ -n "$_repo_root" && -f "$_repo_root/.worktree-up.conf" ]]; then
-    set -a
-    source "$_repo_root/.worktree-up.conf"
-    set +a
-fi
+_gc() { git config "gtr.worktree-up.$1" 2>/dev/null || echo "$2"; }
 
-BACKEND_DIR="${BACKEND_DIR:-backend}"
-BACKEND_CMD="${BACKEND_CMD:-python -m uvicorn main:app}"
-FRONTEND_DIR="${FRONTEND_DIR:-frontend}"
-FRONTEND_CMD="${FRONTEND_CMD:-pnpm dev}"
-FRONTEND_ENV_VAR="${FRONTEND_ENV_VAR:-VITE_API_URL}"
+BACKEND_DIR=$(_gc backend-dir "backend")
+BACKEND_CMD=$(_gc backend-cmd "python -m uvicorn main:app")
+FRONTEND_DIR=$(_gc frontend-dir "frontend")
+FRONTEND_CMD=$(_gc frontend-cmd "pnpm dev")
+FRONTEND_ENV_VAR=$(_gc frontend-env-var "VITE_API_URL")
 
 # Colors
 RED='\033[0;31m'

@@ -280,23 +280,22 @@ Numbered branches (`NNN-*`) get deterministic ports — frontend `3NNN`, backend
 
 ### Prerequisites
 
-A worktree **must already exist** (created via `git gtr new`) before you can launch services for it. The script is configurable via env vars or a `.worktree-up.conf` file in the repo root:
+A worktree **must already exist** (created via `git gtr new`) before you can launch services for it. The script reads config from `git config` under `gtr.worktree-up.*`:
 
-| Variable | Default | Description |
+| Key | Default | Description |
 |---|---|---|
-| `BACKEND_DIR` | `backend` | Subdirectory containing the backend |
-| `BACKEND_CMD` | `python -m uvicorn main:app` | Command to start the backend |
-| `FRONTEND_DIR` | `frontend` | Subdirectory containing the frontend |
-| `FRONTEND_CMD` | `pnpm dev` | Command to start the frontend |
-| `FRONTEND_ENV_VAR` | `VITE_API_URL` | Env var to point frontend at the backend URL |
+| `gtr.worktree-up.backend-dir` | `backend` | Subdirectory containing the backend |
+| `gtr.worktree-up.backend-cmd` | `python -m uvicorn main:app` | Command to start the backend |
+| `gtr.worktree-up.frontend-dir` | `frontend` | Subdirectory containing the frontend |
+| `gtr.worktree-up.frontend-cmd` | `pnpm dev` | Command to start the frontend |
+| `gtr.worktree-up.frontend-env-var` | `VITE_API_URL` | Env var to point frontend at the backend URL |
 
-Example `.worktree-up.conf`:
+Example setup:
 ```bash
-BACKEND_DIR=klair-api
-BACKEND_CMD="python fast_endpoint.py"
-FRONTEND_DIR=klair-client
-FRONTEND_CMD="pnpm dev"
-FRONTEND_ENV_VAR=VITE_AI_ADOPTION_API_URL
+git config gtr.worktree-up.backend-dir "klair-api"
+git config gtr.worktree-up.backend-cmd "python fast_endpoint.py"
+git config gtr.worktree-up.frontend-dir "klair-client"
+git config gtr.worktree-up.frontend-env-var "VITE_AI_ADOPTION_API_URL"
 ```
 
 If the user asks to launch a worktree that doesn't exist yet, **create it first** (Mode: create), then launch.
