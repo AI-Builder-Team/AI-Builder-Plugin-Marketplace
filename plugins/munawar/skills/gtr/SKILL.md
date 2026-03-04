@@ -110,6 +110,12 @@ If count is 0, sync is safe to run non-interactively. If not, investigate the re
 $ARGUMENTS
 </user-instructions>
 
+### Routing: read the user instruction first
+
+- **Custom objective**: If the user's instruction doesn't fit any of the modes below (e.g. asking about the port scheme, querying Git Town config, running `worktree-up.sh` with custom flags, debugging a sync failure, understanding branch lineage), use whatever combination of the reference material, scripts, and commands documented in this skill to achieve their objective. You are not bound to the mode workflows.
+
+- **Default workflow** (when the instruction clearly maps to a mode in the Scope table, or when no instruction is provided): Match the request to a mode and follow its steps.
+
 ---
 
 ## Mode: create
