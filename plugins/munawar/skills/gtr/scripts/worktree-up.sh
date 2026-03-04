@@ -18,25 +18,59 @@
 #
 # Prerequisites:
 #   - git gtr installed (brew tap coderabbitai/tap && brew install git-gtr)
+#   - All 5 git config keys under gtr.worktree-up.* MUST be set (no defaults).
+#     The script will refuse to launch if any are missing.
 #
-# Configuration (git config under gtr.worktree-up.*):
-#   git config gtr.worktree-up.backend-dir "backend"
-#   git config gtr.worktree-up.backend-cmd "python -m uvicorn main:app"
-#   git config gtr.worktree-up.frontend-dir "frontend"
+# Configuration (git config under gtr.worktree-up.* — ALL REQUIRED):
+#   git config gtr.worktree-up.backend-dir "klair-api"
+#   git config gtr.worktree-up.backend-cmd "python fast_endpoint.py"
+#   git config gtr.worktree-up.frontend-dir "klair-client"
 #   git config gtr.worktree-up.frontend-cmd "pnpm dev"
-#   git config gtr.worktree-up.frontend-env-var "VITE_API_URL"
+#   git config gtr.worktree-up.frontend-env-var "VITE_AI_ADOPTION_API_URL"
 
 set -euo pipefail
 
-# ── Configuration (from git config) ──────────────────────────────
+# ── Configuration (from git config — no defaults, must be explicit) ─
 
-_gc() { git config "gtr.worktree-up.$1" 2>/dev/null || echo "$2"; }
+_gc() { git config "gtr.worktree-up.$1" 2>/dev/null || true; }
 
-BACKEND_DIR=$(_gc backend-dir "backend")
-BACKEND_CMD=$(_gc backend-cmd "python -m uvicorn main:app")
-FRONTEND_DIR=$(_gc frontend-dir "frontend")
-FRONTEND_CMD=$(_gc frontend-cmd "pnpm dev")
-FRONTEND_ENV_VAR=$(_gc frontend-env-var "VITE_API_URL")
+BACKEND_DIR=$(_gc backend-dir)
+BACKEND_CMD=$(_gc backend-cmd)
+FRONTEND_DIR=$(_gc frontend-dir)
+FRONTEND_CMD=$(_gc frontend-cmd)
+FRONTEND_ENV_VAR=$(_gc frontend-env-var)
+
+# ── Validate config (only needed for launch, not stop/list) ───────
+
+check_config() {
+    local missing=()
+    [[ -z "$BACKEND_DIR" ]]     && missing+=("backend-dir")
+    [[ -z "$BACKEND_CMD" ]]     && missing+=("backend-cmd")
+    [[ -z "$FRONTEND_DIR" ]]    && missing+=("frontend-dir")
+    [[ -z "$FRONTEND_CMD" ]]    && missing+=("frontend-cmd")
+    [[ -z "$FRONTEND_ENV_VAR" ]] && missing+=("frontend-env-var")
+
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        err "worktree-up is not configured for this repo."
+        echo "" >&2
+        echo "Missing git config keys:" >&2
+        for key in "${missing[@]}"; do
+            echo "  gtr.worktree-up.$key" >&2
+        done
+        echo "" >&2
+        echo "Run these commands to configure (adjust values for your project):" >&2
+        echo "" >&2
+        echo "  git config gtr.worktree-up.backend-dir \"<backend-subdir>\"" >&2
+        echo "  git config gtr.worktree-up.backend-cmd \"<command to start backend>\"" >&2
+        echo "  git config gtr.worktree-up.frontend-dir \"<frontend-subdir>\"" >&2
+        echo "  git config gtr.worktree-up.frontend-cmd \"<command to start frontend>\"" >&2
+        echo "  git config gtr.worktree-up.frontend-env-var \"<VITE_API_URL or similar>\"" >&2
+        echo "" >&2
+        echo "Current config:" >&2
+        git config --get-regexp 'gtr.worktree-up' 2>/dev/null | sed 's/^/  /' >&2 || echo "  (none set)" >&2
+        exit 1
+    fi
+}
 
 # Colors
 RED='\033[0;31m'
@@ -257,6 +291,7 @@ do_list() {
 # ── Main: launch ─────────────────────────────────────────────────
 
 do_launch() {
+    check_config
     local arg="${1:-}"
     local name
     name=$(resolve_worktree "$arg")
@@ -271,11 +306,13 @@ do_launch() {
 
     # Validate
     if [[ ! -d "$api_dir" ]]; then
-        err "Backend dir not found: $api_dir (set BACKEND_DIR to override)"
+        err "Backend dir not found: $api_dir"
+        err "Fix via: git config gtr.worktree-up.backend-dir \"<correct-subdir>\""
         exit 1
     fi
     if [[ ! -d "$client_dir" ]]; then
-        err "Frontend dir not found: $client_dir (set FRONTEND_DIR to override)"
+        err "Frontend dir not found: $client_dir"
+        err "Fix via: git config gtr.worktree-up.frontend-dir \"<correct-subdir>\""
         exit 1
     fi
 

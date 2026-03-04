@@ -25,6 +25,14 @@ Audit a Claude Code session by its ID. Parses the JSONL transcript to show conve
 
 ## Instructions
 
+### Routing: read the user instruction first
+
+Decide which path to follow before doing anything else:
+
+- **Custom objective**: If the user's instruction asks for something other than a standard session audit (e.g. searching for a pattern, extracting a conversation excerpt, comparing sessions, answering a question about what happened, evaluating a skill's behavior), then resolve the session (Step 1) and use whatever combination of the scripts and JSONL schema below to achieve their objective. You are not bound to the audit workflow — treat the scripts as utilities and the JSONL as raw data. Run scripts as many times as needed, read the JSONL directly if the scripts don't cover it, and structure your output to answer what was asked.
+
+- **Standard audit** (default when no instruction is provided, or when the instruction explicitly requests an audit): Follow Steps 1–4 below in sequence.
+
 ### Step 1: Resolve the session
 
 ```bash
@@ -43,13 +51,10 @@ If still not found, fall back to grep:
 grep -rl "$0" ~/.claude/projects/*/  2>/dev/null | head -5
 ```
 
-### Step 2: Run reports to answer the instruction
+### Step 2: Run the lessons-learned audit
 
 Use the resolved JSONL path from step 1. The `JSONL` placeholder below means the path returned by resolve.
 
-If a specific instruction was provided, use your judgment to pick whatever combination of the tools below best answers it. Run as many times as needed.
-
-If no instruction was provided (or the instruction does not override this default), perform a **lessons-learned audit**:
 1. Run stats, errors, and conversation (with `--no-thinking --max-len 500`) on the main session
 2. Run errors on each subagent session
 3. Focus your analysis on identifying:
@@ -61,7 +66,7 @@ If no instruction was provided (or the instruction does not override this defaul
 5. Derive concise, actionable lessons — generic rules that could be baked into the relevant skill, agent, or system prompt so future sessions arrive at the right outcome more directly
 6. Lessons must NOT make any skill or agent less generic or less able to function across varied contexts — they should improve precision without narrowing scope
 
-### Available reports
+### Available scripts
 
 **Stats:**
 ```bash

@@ -280,21 +280,28 @@ Numbered branches (`NNN-*`) get deterministic ports — frontend `3NNN`, backend
 
 ### Prerequisites
 
-A worktree **must already exist** (created via `git gtr new`) before you can launch services for it. The script reads config from `git config` under `gtr.worktree-up.*`:
+A worktree **must already exist** (created via `git gtr new`) before you can launch services for it. The script reads config from `git config` under `gtr.worktree-up.*`. **All 5 keys are required — there are no defaults.** The script will refuse to launch and print exactly which keys are missing if any are unset.
 
-| Key | Default | Description |
+Before running `worktree-up.sh`, check if config is set:
+```bash
+git config --get-regexp 'gtr.worktree-up' 2>/dev/null
+```
+If no output or keys are missing, set them first. Do NOT guess values — inspect the repo's directory structure and `.env` files to determine the correct values.
+
+| Key | Required | Description |
 |---|---|---|
-| `gtr.worktree-up.backend-dir` | `backend` | Subdirectory containing the backend |
-| `gtr.worktree-up.backend-cmd` | `python -m uvicorn main:app` | Command to start the backend |
-| `gtr.worktree-up.frontend-dir` | `frontend` | Subdirectory containing the frontend |
-| `gtr.worktree-up.frontend-cmd` | `pnpm dev` | Command to start the frontend |
-| `gtr.worktree-up.frontend-env-var` | `VITE_API_URL` | Env var to point frontend at the backend URL |
+| `gtr.worktree-up.backend-dir` | Yes | Subdirectory containing the backend |
+| `gtr.worktree-up.backend-cmd` | Yes | Command to start the backend |
+| `gtr.worktree-up.frontend-dir` | Yes | Subdirectory containing the frontend |
+| `gtr.worktree-up.frontend-cmd` | Yes | Command to start the frontend |
+| `gtr.worktree-up.frontend-env-var` | Yes | Env var to point frontend at the backend URL |
 
 Example setup:
 ```bash
 git config gtr.worktree-up.backend-dir "klair-api"
 git config gtr.worktree-up.backend-cmd "python fast_endpoint.py"
 git config gtr.worktree-up.frontend-dir "klair-client"
+git config gtr.worktree-up.frontend-cmd "pnpm dev"
 git config gtr.worktree-up.frontend-env-var "VITE_AI_ADOPTION_API_URL"
 ```
 
