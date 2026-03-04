@@ -364,9 +364,9 @@ To find the editable source, check these locations in order:
 When you edit an existing skill inside a marketplace plugin repo, follow these steps after the edit:
 
 1. **Bump the plugin version** in both `plugin.json` and the corresponding `marketplace.json` entry:
-   - **Patch bump** for most edits to existing components (e.g. `4.3.0` → `4.3.1`)
-   - **Minor bump** for large refactors of an existing component (e.g. `4.3.0` → `4.4.0`)
-   - **Major bump** only if a completely new skill, agent, or command is added (e.g. `4.3.0` → `5.0.0`)
+   - **Patch bump** for edits to existing components (e.g. `4.3.0` → `4.3.1`)
+   - **Minor bump** for adding a new skill, agent, or command (e.g. `4.3.0` → `4.4.0`)
+   - **Major bump** only for breaking changes, large-scale restructuring, or significant new capabilities that change the plugin's scope (e.g. `4.3.0` → `5.0.0`)
 
 2. **Push changes** — run `/m:push` from the repo root to commit and push.
 

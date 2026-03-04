@@ -103,9 +103,10 @@ Check if `<target>/.claude-plugin/plugin.json` already exists.
    e. If no consistent pattern is found (mixed naming), print a warning and keep source names as-is.
 
 5. **Decide the bump**:
-   - If `added` is non-empty (new skills, agents, or commands were introduced) → **Major bump** (e.g. `1.2.0` → `2.0.0`)
+   - If `added` is non-empty (new skills, agents, or commands were introduced) → **Minor bump** (e.g. `1.2.0` → `1.3.0`)
    - If `added` is empty but `updated` is non-empty and changes are large refactors → **Minor bump** (e.g. `1.2.0` → `1.3.0`)
    - If `added` is empty and changes are routine edits to existing components → **Patch bump** (e.g. `1.2.0` → `1.2.1`)
+   - **Major bump** only for breaking changes, large-scale restructuring, or significant new capabilities that change the plugin's scope (e.g. `1.2.0` → `2.0.0`)
    - If nothing changed at all → warn the user that source and target appear identical, ask whether to proceed
 
 5. **Print the version decision** before proceeding:
@@ -247,8 +248,8 @@ When the custom objective path involves editing an existing plugin's files (not 
 After editing files in a marketplace git repo (whether through standard packaging or the custom objective path):
 
 1. **Bump the plugin version** in both `plugin.json` and the corresponding `marketplace.json` entry:
-   - **Patch bump** for most edits to existing components (e.g. `4.3.0` → `4.3.1`)
-   - **Minor bump** for large refactors of an existing component (e.g. `4.3.0` → `4.4.0`)
-   - **Major bump** only if a completely new skill, agent, or command is added (e.g. `4.3.0` → `5.0.0`)
+   - **Patch bump** for edits to existing components (e.g. `4.3.0` → `4.3.1`)
+   - **Minor bump** for adding a new skill, agent, or command (e.g. `4.3.0` → `4.4.0`)
+   - **Major bump** only for breaking changes, large-scale restructuring, or significant new capabilities that change the plugin's scope (e.g. `4.3.0` → `5.0.0`)
 
 2. **Push changes** — run `/m:push` from the repo root to commit and push.
