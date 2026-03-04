@@ -338,7 +338,7 @@ Use this pattern when:
 
 ### Best Practices
 
-1. **Use clear, specific names** - Prefix with `m-` for meta/custom skills
+1. **Use clear, specific names** - short, memorable, easy to type
 2. **Provide argument-hint** - Help users understand what to pass
 3. **Use fork context for research** - Keeps main context clean
 4. **Whitelist tools** - Use `allowed-tools` for safety
@@ -347,6 +347,28 @@ Use this pattern when:
 7. **Test with various inputs** - Ensure argument handling works
 8. **Bundle helper scripts in `scripts/`** - Keep skills self-contained; reference via markdown links in SKILL.md
 9. **Consider a routing gate for workflow skills** - If your skill has a stepwise workflow, consider adding a routing section at the top of Instructions that lets the user's custom objective bypass the default steps while still leveraging the skill's knowledge and scripts. This makes the skill useful for a wider range of tasks without losing its default behavior (see Common Patterns #6)
+
+### Editing Skill Files
+
+Never edit files under `~/.claude/plugins/cache/` — that's a read-only installed copy.
+
+To find the editable source, check these locations in order:
+
+1. **Current project** — if it's a plugin marketplace repo (has `.claude-plugin/marketplace.json`), the skill source lives under `plugins/` here. Map from the cache path: `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/skills/<skill>/` → `<cwd>/plugins/<author>/skills/<skill>/`.
+2. **Home directory skills** — `~/.claude/skills/` for personal skills.
+3. **Project-local skills** — `.claude/skills/` in whatever project you're working in.
+4. **Ask the user** — if you can't find the source in any of those places, ask where it lives.
+
+#### After editing a skill in a marketplace plugin — version bump and push
+
+When you edit an existing skill inside a marketplace plugin repo, follow these steps after the edit:
+
+1. **Bump the plugin version** in both `plugin.json` and the corresponding `marketplace.json` entry:
+   - **Patch bump** for most edits to existing components (e.g. `4.3.0` → `4.3.1`)
+   - **Minor bump** for large refactors of an existing component (e.g. `4.3.0` → `4.4.0`)
+   - **Major bump** only if a completely new skill, agent, or command is added (e.g. `4.3.0` → `5.0.0`)
+
+2. **Push changes** — run `/m:push` from the repo root to commit and push.
 
 ### Testing Your Skill
 

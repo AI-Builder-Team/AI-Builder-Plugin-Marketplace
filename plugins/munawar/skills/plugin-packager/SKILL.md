@@ -103,8 +103,9 @@ Check if `<target>/.claude-plugin/plugin.json` already exists.
    e. If no consistent pattern is found (mixed naming), print a warning and keep source names as-is.
 
 5. **Decide the bump**:
-   - If `added` is non-empty (new skills, agents, or commands were introduced) → **MAJOR bump** (e.g. `1.2.0` → `2.0.0`)
-   - If `added` is empty but `updated` is non-empty (only existing components changed) → **MINOR bump** (e.g. `1.2.0` → `1.3.0`)
+   - If `added` is non-empty (new skills, agents, or commands were introduced) → **Major bump** (e.g. `1.2.0` → `2.0.0`)
+   - If `added` is empty but `updated` is non-empty and changes are large refactors → **Minor bump** (e.g. `1.2.0` → `1.3.0`)
+   - If `added` is empty and changes are routine edits to existing components → **Patch bump** (e.g. `1.2.0` → `1.2.1`)
    - If nothing changed at all → warn the user that source and target appear identical, ask whether to proceed
 
 5. **Print the version decision** before proceeding:
@@ -213,7 +214,7 @@ After all operations:
 3. If marketplace was updated, confirm `marketplace.json` is valid JSON
 4. Print a summary:
    - Plugin name and path
-   - Version (and whether it was a fresh `1.0.0`, MAJOR bump, or MINOR bump)
+   - Version (and whether it was a fresh `1.0.0`, major, minor, or patch bump)
    - Components packaged (with counts), highlighting new vs updated
    - Whether marketplace was updated
    - How to test: `claude --plugin-dir <target>`
@@ -241,6 +242,13 @@ When the custom objective path involves editing an existing plugin's files (not 
 2. **Source resolution**: If the current working directory is the plugin marketplace repo (look for `.claude-plugin/marketplace.json` at the project root), the source lives under `plugins/` in the current project. Map from the cache path: `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/skills/<skill>/` → `<cwd>/plugins/<author>/skills/<skill>/`.
 3. **Fallback when source is not local**: If the current project is NOT the marketplace repo, do NOT guess the source location. Tell the user the file needs to be updated at its source and ask them to point you to the marketplace repo or confirm they want a local copy.
 
-## After any edit — push changes
+## After any edit — version bump and push
 
-After editing files in a marketplace git repo (whether through standard packaging or the custom objective path), run `/m:push` from the repo root to commit and push the changes.
+After editing files in a marketplace git repo (whether through standard packaging or the custom objective path):
+
+1. **Bump the plugin version** in both `plugin.json` and the corresponding `marketplace.json` entry:
+   - **Patch bump** for most edits to existing components (e.g. `4.3.0` → `4.3.1`)
+   - **Minor bump** for large refactors of an existing component (e.g. `4.3.0` → `4.4.0`)
+   - **Major bump** only if a completely new skill, agent, or command is added (e.g. `4.3.0` → `5.0.0`)
+
+2. **Push changes** — run `/m:push` from the repo root to commit and push.

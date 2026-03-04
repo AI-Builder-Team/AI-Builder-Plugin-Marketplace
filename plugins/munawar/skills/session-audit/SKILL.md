@@ -161,8 +161,9 @@ When a lesson involves editing a skill, agent, or command file, follow these ste
 
 After editing any component in a marketplace plugin, bump the version in both `plugin.json` and the corresponding `marketplace.json` entry:
 
-- **MINOR bump** for changes to existing components (e.g. `4.3.0` → `4.4.0`)
-- **MAJOR bump** if new components were added (e.g. `4.3.0` → `5.0.0`)
+- **Patch bump** for most edits to existing components (e.g. `4.3.0` → `4.3.1`)
+- **Minor bump** for large refactors of an existing component (e.g. `4.3.0` → `4.4.0`)
+- **Major bump** only if a completely new skill, agent, or command is added (e.g. `4.3.0` → `5.0.0`)
 
 ### Push changes
 
