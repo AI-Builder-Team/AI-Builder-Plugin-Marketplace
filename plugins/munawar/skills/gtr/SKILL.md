@@ -298,6 +298,12 @@ git config gtr.worktree-up.frontend-dir "klair-client"
 git config gtr.worktree-up.frontend-env-var "VITE_AI_ADOPTION_API_URL"
 ```
 
+### Runtime port override requirement
+
+The script assigns per-worktree ports dynamically (e.g. worktree 016 gets backend `:8016`, frontend `:3016`) and sets `frontend-env-var` at launch time to point the frontend at the correct backend. This **only works if the project's frontend respects env vars at runtime** — Vite, for example, picks up `VITE_*` env vars over `.env` file values by default.
+
+If the backend URL is hardcoded in a file (`.env`, `vite.config.ts` proxy config, `next.config.js`, etc.) and the env var doesn't override it, the per-worktree port wiring won't work. For those projects, the hardcoded value must be removed or changed to read from an env var before `worktree-up` can manage ports correctly.
+
 If the user asks to launch a worktree that doesn't exist yet, **create it first** (Mode: create), then launch.
 
 ### Steps: Launch (user says "start", "up", "launch", "run servers")
