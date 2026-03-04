@@ -1,6 +1,6 @@
 ---
 name: m:fruit
-description: banana
+description: emoji 
 ---
 
-banana
+apple
