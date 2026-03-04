@@ -237,11 +237,13 @@ After all operations:
 
 ## Editing existing plugin files — cache vs source
 
-When the custom objective path involves editing an existing plugin's files (not fresh packaging), resolve the correct edit location first.
+Never edit files under `~/.claude/plugins/cache/` — that's a read-only installed copy.
 
-1. **Cache detection**: Any path containing `/.claude/plugins/cache/` is a read-only installed copy. NEVER edit these files — changes will be overwritten on next install/update.
-2. **Source resolution**: If the current working directory is the plugin marketplace repo (look for `.claude-plugin/marketplace.json` at the project root), the source lives under `plugins/` in the current project. Map from the cache path: `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/skills/<skill>/` → `<cwd>/plugins/<author>/skills/<skill>/`.
-3. **Fallback when source is not local**: If the current project is NOT the marketplace repo, do NOT guess the source location. Tell the user the file needs to be updated at its source and ask them to point you to the marketplace repo or confirm they want a local copy.
+To find the editable source, first figure out what kind of repo you're in. If the CWD path or directory name contains "plugin", "skills", or "marketplace", or there's a `skills/` directory with skill folders in it, you're likely in a plugin or a skills repo — search children folders excluding .claude generally or the `plugins/*/skills/*/SKILL.md` for a match. If not found, check these fallbacks:
+
+1. **Home directory skills** — `~/.claude/skills/` for personal skills.
+2. **Project-local skills** — `.claude/skills/` in whatever project you're working in.
+3. **Ask the user** — if you can't find the source in any of those places, ask where it lives.
 
 ## After any edit — version bump and push
 

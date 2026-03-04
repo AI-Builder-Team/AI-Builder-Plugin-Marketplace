@@ -322,12 +322,11 @@ Use this pattern when:
 
 Never edit files under `~/.claude/plugins/cache/` — that's a read-only installed copy.
 
-To find the editable source, check these locations in order:
+To find the editable source, first figure out what kind of repo you're in. If the CWD path or directory name contains "plugin", "skills", or "marketplace", or there's a `skills/` directory with skill folders in it, you're likely in a plugin or a skills repo — search children folders excluding .claude generally or the `plugins/*/skills/*/SKILL.md` for a match. If not found, check these fallbacks:
 
-1. **Current project** — if it's a plugin marketplace repo (has `.claude-plugin/marketplace.json`), the skill source lives under `plugins/` here. Map from the cache path: `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/skills/<skill>/` → `<cwd>/plugins/<author>/skills/<skill>/`.
-2. **Home directory skills** — `~/.claude/skills/` for personal skills.
-3. **Project-local skills** — `.claude/skills/` in whatever project you're working in.
-4. **Ask the user** — if you can't find the source in any of those places, ask where it lives.
+1. **Home directory skills** — `~/.claude/skills/` for personal skills.
+2. **Project-local skills** — `.claude/skills/` in whatever project you're working in.
+3. **Ask the user** — if you can't find the source in any of those places, ask where it lives.
 
 #### After editing a skill in a marketplace plugin — version bump and push
 
