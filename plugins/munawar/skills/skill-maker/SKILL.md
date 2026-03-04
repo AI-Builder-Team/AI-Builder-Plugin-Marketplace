@@ -78,6 +78,20 @@ python3 ~/.claude/skills/my-skill/scripts/fetch_data.py "$URL"
 
 `${CLAUDE_PLUGIN_ROOT}` works in SKILL.md bash commands, hooks, MCP configs, and executed scripts. It is **not** a shell environment variable — it resolves only within Claude Code's plugin context.
 
+### Plugin Skill Naming — Prefix Rules
+
+When the target directory contains `plugins/` in its path, the skill is part of a bundled plugin. Apply these rules:
+
+1. **Prefix the skill name with the plugin name** in the `name:` frontmatter field. Format: `<plugin-name>:<skill-name>`. The plugin name comes from the `name` field in the nearest `plugin.json` (at `.claude-plugin/plugin.json` relative to the plugin root).
+   - Plugin `m` → `m:my-skill`
+   - Plugin `klair-legacy` → `klair-legacy:my-skill`
+
+2. **Detect the plugin name automatically**: Walk up from the skill directory to find `.claude-plugin/plugin.json` and read its `name` field. This is the authoritative prefix.
+
+3. **Check existing sibling skills for consistency**: Look at other skills in the same plugin's `skills/` directory. Their `name:` frontmatter fields show the prefix convention already in use. Match it exactly.
+
+4. **Use `${CLAUDE_PLUGIN_ROOT}`** for all script and resource paths (see Portable Paths above) — never hardcode `~/` paths in plugin skills.
+
 ### SKILL.md Format
 
 Every skill needs a `SKILL.md` with frontmatter and content:
@@ -300,15 +314,15 @@ See [scripts/tool.py](scripts/tool.py) for the utility script.
 
 ## Instructions
 
+$ARGUMENTS
+
 ### Routing: read the user instruction first
 
-Decide which path to follow before doing anything else:
-
-- **Custom objective**: If the user's instruction asks for something
-  other than the default workflow (e.g. a specific question, a
-  different analysis, a one-off use of the bundled scripts), then
-  use whatever combination of the scripts and context below to
-  achieve their objective. You are not bound to the workflow steps.
+- **Custom objective**: If the user's instruction requires a deviation
+  from the default workflow (e.g. a different analysis, a one-off use
+  of the bundled scripts), use whatever combination of the scripts and
+  context below to achieve their objective. You are not bound to the
+  workflow steps.
 
 - **Default workflow** (when no instruction is provided, or when the
   user explicitly requests the standard workflow): Follow Steps 1–N
@@ -336,18 +350,17 @@ Use this pattern when:
 
 ### Testing Your Skill
 
-After creating a skill:
-1. Restart Claude Code or run `/reload-skills` (if available)
-2. Test with `/skill-name --help` or similar
-3. Try various argument combinations
-4. Check output and behavior
-5. Iterate on prompt clarity
+After creating a skill, suggest the user run it on a real-world use case, then use `/m:session-audit` on the invocation session to identify issues and iterate on the skill's prompt.
 
 ---
 
 ## Your Task
 
-Now, based on the request "$ARGUMENTS", create a new skill:
+**Routing:** If the user's request is something other than creating a new skill (e.g. editing an existing skill, reviewing one, adding a section, refactoring) — use the reference knowledge above to achieve their objective directly. Skip the creation steps below.
+
+**User request:** $ARGUMENTS
+
+**Default — create a new skill:**
 
 1. **Determine skill purpose** - What should it do?
 2. **Choose skill name** - Follow convention (lowercase, hyphens, prefix `m-` if custom)
