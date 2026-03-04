@@ -1,16 +1,16 @@
 #!/bin/bash
-# klair-up.sh — Launch frontend + backend for any worktree
+# worktree-up.sh — Launch frontend + backend for any worktree
 #
 # Resolves worktree paths via `git gtr` — no hardcoded paths needed.
 # Must be run from inside any worktree of the target git repo.
 #
 # Usage:
-#   klair-up                  # auto-detect worktree from cwd
-#   klair-up 016              # launch worktree 016-*
-#   klair-up main             # launch main worktree
-#   klair-up --stop           # kill processes for current worktree
-#   klair-up --stop 016       # kill processes for worktree 016
-#   klair-up --list           # show running klair instances
+#   worktree-up.sh                  # auto-detect worktree from cwd
+#   worktree-up.sh 016              # launch worktree 016-*
+#   worktree-up.sh main             # launch main worktree
+#   worktree-up.sh --stop           # kill processes for current worktree
+#   worktree-up.sh --stop 016       # kill processes for worktree 016
+#   worktree-up.sh --list           # show running instances
 #
 # Port scheme (suffix always matches between frontend and backend):
 #   Numbered branches (NNN-*):        frontend 3NNN, backend 8NNN
@@ -162,7 +162,7 @@ get_ports() {
 # ── PID file management ──────────────────────────────────────────
 
 pid_dir() {
-    local dir="/tmp/klair-up"
+    local dir="/tmp/worktree-up"
     mkdir -p "$dir"
     echo "$dir"
 }
@@ -181,7 +181,7 @@ do_stop() {
     local pidfile="$(pid_dir)/${name}.pids"
 
     if [[ ! -f "$pidfile" ]]; then
-        err "No running instance found for '$name'. Use 'klair-up --list' to see running instances."
+        err "No running instance found for '$name'. Use 'worktree-up --list' to see running instances."
         exit 1
     fi
 
@@ -200,7 +200,7 @@ do_list() {
     pdir="$(pid_dir)"
     local found=false
 
-    echo -e "${BOLD}Running Klair instances:${NC}"
+    echo -e "${BOLD}Running worktree instances:${NC}"
     echo ""
     printf "  ${BOLD}%-35s %-12s %-12s %-10s${NC}\n" "WORKTREE" "BACKEND" "FRONTEND" "STATUS"
     printf "  %-35s %-12s %-12s %-10s\n" "--------" "-------" "--------" "------"
@@ -233,8 +233,8 @@ do_list() {
 
     if $found; then
         echo -e "  ${CYAN}Tail logs:${NC}"
-        echo -e "    tail -f /tmp/klair-up/logs/<worktree>-backend.log"
-        echo -e "    tail -f /tmp/klair-up/logs/<worktree>-frontend.log"
+        echo -e "    tail -f /tmp/worktree-up/logs/<worktree>-backend.log"
+        echo -e "    tail -f /tmp/worktree-up/logs/<worktree>-frontend.log"
         echo ""
     fi
 }
@@ -270,7 +270,7 @@ do_launch() {
         IFS=',' read -r be_pid fe_pid _be_port _fe_port < "$pidfile"
         if kill -0 "$be_pid" 2>/dev/null || kill -0 "$fe_pid" 2>/dev/null; then
             warn "Worktree '$name' is already running (backend=$be_pid, frontend=$fe_pid)"
-            warn "Use 'klair-up --stop $name' first, or 'klair-up --list' to see all."
+            warn "Use 'worktree-up --stop $name' first, or 'worktree-up --list' to see all."
             exit 1
         fi
         rm -f "$pidfile"
@@ -286,11 +286,11 @@ do_launch() {
         exit 1
     fi
 
-    local log_dir="/tmp/klair-up/logs"
+    local log_dir="/tmp/worktree-up/logs"
     mkdir -p "$log_dir"
 
     echo ""
-    echo -e "${BOLD}${CYAN}Launching Klair: ${name}${NC}"
+    echo -e "${BOLD}${CYAN}Launching worktree: ${name}${NC}"
     echo -e "  Worktree:  $wt_path"
     echo -e "  Backend:   http://localhost:${BACKEND_PORT}"
     echo -e "  Frontend:  http://localhost:${FRONTEND_PORT}"
@@ -343,7 +343,7 @@ do_launch() {
         log "${GREEN}Both services running!${NC}"
         echo -e "  Backend log:  ${CYAN}tail -f $log_dir/${name}-backend.log${NC}"
         echo -e "  Frontend log: ${CYAN}tail -f $log_dir/${name}-frontend.log${NC}"
-        echo -e "  Stop:         ${CYAN}klair-up --stop${NC}"
+        echo -e "  Stop:         ${CYAN}worktree-up --stop${NC}"
         echo ""
     fi
 }
@@ -359,18 +359,18 @@ case "${1:-}" in
         do_list
         ;;
     --help|-h)
-        echo "Usage: klair-up [worktree-number|name|main]"
-        echo "       klair-up --stop [worktree-number|name|main]"
-        echo "       klair-up --list"
+        echo "Usage: worktree-up [worktree-number|name|main]"
+        echo "       worktree-up --stop [worktree-number|name|main]"
+        echo "       worktree-up --list"
         echo ""
         echo "Examples:"
-        echo "  klair-up              # auto-detect from cwd"
-        echo "  klair-up 016          # launch worktree 016-* (ports 3016/8016)"
-        echo "  klair-up fix-bug      # launch unnumbered worktree (auto-assigns ports)"
-        echo "  klair-up main         # launch main worktree (auto-assigns ports)"
-        echo "  klair-up --stop 016   # stop worktree 016"
-        echo "  klair-up --stop       # stop worktree detected from cwd"
-        echo "  klair-up --list       # show all running instances"
+        echo "  worktree-up              # auto-detect from cwd"
+        echo "  worktree-up 016          # launch worktree 016-* (ports 3016/8016)"
+        echo "  worktree-up fix-bug      # launch unnumbered worktree (auto-assigns ports)"
+        echo "  worktree-up main         # launch main worktree (auto-assigns ports)"
+        echo "  worktree-up --stop 016   # stop worktree 016"
+        echo "  worktree-up --stop       # stop worktree detected from cwd"
+        echo "  worktree-up --list       # show all running instances"
         ;;
     *)
         do_launch "${1:-}"
