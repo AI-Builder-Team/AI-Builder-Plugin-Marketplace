@@ -280,10 +280,24 @@ Numbered branches (`NNN-*`) get deterministic ports — frontend `3NNN`, backend
 
 ### Prerequisites
 
-A worktree **must already exist** (created via `git gtr new`) before you can launch services for it. The script expects:
-- `klair-api/.venv` to be present (run `uv sync` inside `klair-api/` if missing)
-- `klair-client/node_modules` to be present (run `pnpm install` inside `klair-client/` if missing)
-- `.env` files in both `klair-api/` and `klair-client/`
+A worktree **must already exist** (created via `git gtr new`) before you can launch services for it. The script is configurable via env vars or a `.worktree-up.conf` file in the repo root:
+
+| Variable | Default | Description |
+|---|---|---|
+| `BACKEND_DIR` | `backend` | Subdirectory containing the backend |
+| `BACKEND_CMD` | `python -m uvicorn main:app` | Command to start the backend |
+| `FRONTEND_DIR` | `frontend` | Subdirectory containing the frontend |
+| `FRONTEND_CMD` | `pnpm dev` | Command to start the frontend |
+| `FRONTEND_ENV_VAR` | `VITE_API_URL` | Env var to point frontend at the backend URL |
+
+Example `.worktree-up.conf`:
+```bash
+BACKEND_DIR=klair-api
+BACKEND_CMD="python fast_endpoint.py"
+FRONTEND_DIR=klair-client
+FRONTEND_CMD="pnpm dev"
+FRONTEND_ENV_VAR=VITE_AI_ADOPTION_API_URL
+```
 
 If the user asks to launch a worktree that doesn't exist yet, **create it first** (Mode: create), then launch.
 

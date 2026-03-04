@@ -18,10 +18,31 @@
 #
 # Prerequisites:
 #   - git gtr installed (brew tap coderabbitai/tap && brew install git-gtr)
-#   - Each worktree must have klair-api/.venv and klair-client/node_modules
-#   - .env files must exist in klair-api/ and klair-client/
+#
+# Configuration (env vars or .worktree-up.conf in repo root):
+#   BACKEND_DIR       — subdirectory for backend (default: backend)
+#   BACKEND_CMD       — command to start backend (default: python -m uvicorn main:app)
+#   FRONTEND_DIR      — subdirectory for frontend (default: frontend)
+#   FRONTEND_CMD      — command to start frontend (default: pnpm dev)
+#   FRONTEND_ENV_VAR  — env var to point frontend at backend URL (default: VITE_API_URL)
 
 set -euo pipefail
+
+# ── Configuration ─────────────────────────────────────────────────
+
+# Load config from .worktree-up.conf in the repo root (if it exists)
+_repo_root=$(git rev-parse --show-toplevel 2>/dev/null || true)
+if [[ -n "$_repo_root" && -f "$_repo_root/.worktree-up.conf" ]]; then
+    set -a
+    source "$_repo_root/.worktree-up.conf"
+    set +a
+fi
+
+BACKEND_DIR="${BACKEND_DIR:-backend}"
+BACKEND_CMD="${BACKEND_CMD:-python -m uvicorn main:app}"
+FRONTEND_DIR="${FRONTEND_DIR:-frontend}"
+FRONTEND_CMD="${FRONTEND_CMD:-pnpm dev}"
+FRONTEND_ENV_VAR="${FRONTEND_ENV_VAR:-VITE_API_URL}"
 
 # Colors
 RED='\033[0;31m'
@@ -251,16 +272,16 @@ do_launch() {
     num=$(get_worktree_number "$name")
     get_ports "$num"
 
-    local api_dir="$wt_path/klair-api"
-    local client_dir="$wt_path/klair-client"
+    local api_dir="$wt_path/$BACKEND_DIR"
+    local client_dir="$wt_path/$FRONTEND_DIR"
 
     # Validate
     if [[ ! -d "$api_dir" ]]; then
-        err "Backend not found: $api_dir"
+        err "Backend dir not found: $api_dir (set BACKEND_DIR to override)"
         exit 1
     fi
     if [[ ! -d "$client_dir" ]]; then
-        err "Frontend not found: $client_dir"
+        err "Frontend dir not found: $client_dir (set FRONTEND_DIR to override)"
         exit 1
     fi
 
@@ -304,11 +325,11 @@ do_launch() {
         if [[ -f .venv/bin/activate ]]; then
             source .venv/bin/activate
         fi
-        # Source the .env file (simple approach - just export PORT override)
+        # Source .env if present
         set -a
         [[ -f .env ]] && source .env
         set +a
-        PORT=$BACKEND_PORT exec python fast_endpoint.py \
+        PORT=$BACKEND_PORT exec $BACKEND_CMD \
             > "$log_dir/${name}-backend.log" 2>&1
     ) &
     local be_pid=$!
@@ -317,9 +338,9 @@ do_launch() {
     log "Starting frontend on port $FRONTEND_PORT..."
     (
         cd "$client_dir"
-        # Override the API URL to point to our backend port
-        export VITE_AI_ADOPTION_API_URL="http://localhost:${BACKEND_PORT}"
-        exec pnpm dev --port "$FRONTEND_PORT" \
+        # Point frontend at the backend
+        export "${FRONTEND_ENV_VAR}=http://localhost:${BACKEND_PORT}"
+        exec $FRONTEND_CMD --port "$FRONTEND_PORT" \
             > "$log_dir/${name}-frontend.log" 2>&1
     ) &
     local fe_pid=$!
