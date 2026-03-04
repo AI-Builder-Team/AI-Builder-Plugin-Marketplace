@@ -2,7 +2,7 @@
 name: "m:gtr"
 description: "Git worktree management with Git Town sync. Create worktrees, sync branches, push, propose PRs. Start/stop frontend+backend dev servers per worktree."
 argument-hint: "<request> e.g. 'create worktree for feature X', 'sync all', 'push', 'list', 'propose', 'launch 016', 'stop', 'running'"
-allowed-tools: Bash(git *), Bash(echo *), Bash(ls *), Bash(pwd), Bash(cd *), Bash(mkdir *), Bash(open *), Bash(gh *), Bash(bash *klair-up*), Bash(klair-up *), Bash(klair-down *), Bash(klair-list *), Bash(klair-list), Bash(klair-up), Bash(klair-down), Bash(tail *), Read(*)
+allowed-tools: Bash(git *), Bash(echo *), Bash(ls *), Bash(pwd), Bash(cd *), Bash(mkdir *), Bash(open *), Bash(gh *), Bash(bash *klair-up*), Bash(tail *), Read(*)
 ---
 
 # Git Worktree + Git Town Manager (Teach Mode)
@@ -266,13 +266,13 @@ Use when the user wants to start, stop, or check the status of frontend + backen
 
 ### Context
 
-The `klair-up.sh` script lives at `.scratch/scripts/klair-up.sh` in the main repo. Shell aliases are pre-configured:
+The `klair-up.sh` script is bundled with this skill at [scripts/klair-up.sh](scripts/klair-up.sh). Run it using relative paths from the skill directory — no installation needed. Requires `git gtr` to be installed for worktree path resolution.
 
-| Alias | Equivalent |
+| Command | How to run |
 |---|---|
-| `klair-up` | `bash .scratch/scripts/klair-up.sh` |
-| `klair-down` | `bash .scratch/scripts/klair-up.sh --stop` |
-| `klair-list` | `bash .scratch/scripts/klair-up.sh --list` |
+| klair-up | `bash scripts/klair-up.sh` |
+| klair-down | `bash scripts/klair-up.sh --stop` |
+| klair-list | `bash scripts/klair-up.sh --list` |
 
 ### Port scheme
 
@@ -291,29 +291,29 @@ If the user asks to launch a worktree that doesn't exist yet, **create it first*
 
 ```bash
 # Auto-detect worktree from cwd
-klair-up
+bash scripts/klair-up.sh
 
 # Launch by worktree number
-klair-up 016
+bash scripts/klair-up.sh 016
 
 # Launch by exact name
-klair-up main
+bash scripts/klair-up.sh main
 ```
 
 ### Steps: Stop (user says "stop", "down", "kill")
 
 ```bash
 # Stop worktree detected from cwd
-klair-down
+bash scripts/klair-up.sh --stop
 
 # Stop a specific worktree
-klair-down 016
+bash scripts/klair-up.sh --stop 016
 ```
 
 ### Steps: List running instances (user says "running", "processes", "status", "what's up")
 
 ```bash
-klair-list
+bash scripts/klair-up.sh --list
 ```
 
 Shows each running worktree with its backend/frontend ports and health status.
@@ -331,16 +331,16 @@ tail -f /tmp/klair-up/logs/<worktree>-frontend.log
 1. Create the worktree first using Mode: create (`git gtr new <branch> --yes`)
 2. Ensure dependencies are installed (`uv sync` in `klair-api/`, `pnpm install` in `klair-client/`)
 3. Ensure `.env` files are copied (the create worktree script handles this)
-4. Then launch: `klair-up <number>`
+4. Then launch: `bash scripts/klair-up.sh <number>`
 </when>
 
 <when condition="user asks to stop all running instances">
 ### Stop all
 There is no built-in "stop all" flag. List first, then stop each one:
 ```bash
-klair-list
-klair-down <name1>
-klair-down <name2>
+bash scripts/klair-up.sh --list
+bash scripts/klair-up.sh --stop <name1>
+bash scripts/klair-up.sh --stop <name2>
 ```
 </when>
 
