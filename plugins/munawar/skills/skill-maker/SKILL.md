@@ -390,8 +390,20 @@ After creating a skill, suggest the user run it on a real-world use case, then u
 4. **Write skill prompt** - Clear instructions for Claude
    - If the skill has a multi-step workflow, consider whether a routing gate (see Common Patterns #6) would make it more flexible
 5. **Add argument handling** - Use `$ARGUMENTS` or positional vars if needed
-6. **Create the skill** - Write to `~/.claude/skills/[skill-name]/SKILL.md`
-7. **Bundle any helper scripts** - If the skill needs utilities (Python scripts, shell scripts), put them in `[skill-name]/scripts/` and reference via markdown links in SKILL.md
+6. **Determine placement** - Figure out whether this repo is a skills/plugin container or a real project. Check these signals:
+   - The repo/directory name or CWD path contains "plugin", "skills", or "marketplace"
+   - A `plugin.json` exists somewhere in the repo
+   - The repo has a `skills/` directory with existing skill folders in it
+
+   **If this looks like a skills/plugin repo:** Create the skill here. Find the nearest `skills/` directory relative to CWD and create inside it. If the CWD is at the repo root and there are multiple plugin directories (each with their own `skills/`), ask the user which one. If a `plugin.json` exists, read it for the plugin name and apply plugin naming rules (prefix, `${CLAUDE_PLUGIN_ROOT}` paths).
+
+   **If the user explicitly says "home", "personal", or "global":** Create at `~/.claude/skills/[skill-name]/SKILL.md`.
+
+   **If the user explicitly says "project" or "project skill":** Create at `<project-root>/.claude/skills/[skill-name]/SKILL.md`.
+
+   **Otherwise (regular project repo, no plugin signals):** Default to `~/.claude/skills/[skill-name]/SKILL.md`.
+
+7. **Bundle any helper scripts** - If the skill needs utilities (Python scripts, shell scripts), put them in `[skill-name]/scripts/` and reference via markdown links in SKILL.md. Use `${CLAUDE_PLUGIN_ROOT}` for paths if the skill is in a plugin, or `~/.claude/skills/` for personal skills.
 8. **Provide usage example** - Show how to invoke it
 
 Ask clarifying questions if the request is ambiguous. Otherwise, proceed to create the skill.
