@@ -147,13 +147,26 @@ Constraints on lessons:
 - Must improve directness of future execution without over-fitting to this session's specifics
 - If no meaningful lessons exist, say so — do not fabricate improvements
 
-## Plugin Cache vs Source — editing rule
+## Editing plugin files — resolve, version, push
 
-When a lesson involves editing a skill, agent, or command file, you MUST check whether the file path is a **cached copy** or the **canonical source** before proposing or making edits.
+When a lesson involves editing a skill, agent, or command file, follow these steps in order.
+
+### Locate the canonical source
 
 1. **Cache detection**: Any path containing `/.claude/plugins/cache/` is a read-only installed copy. NEVER edit these files — changes will be overwritten on next install/update.
 2. **Source resolution**: If the current working directory is the plugin marketplace repo (look for `.claude-plugin/marketplace.json` at the project root), the source lives under `plugins/` in the current project. Map from the cache path: `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/skills/<skill>/` → `<cwd>/plugins/<author>/skills/<skill>/`.
 3. **Fallback when source is not local**: If the current project is NOT the marketplace repo, do NOT guess the source location. Instead, tell the user the file needs to be updated at its source and ask them to either point you to the marketplace repo or confirm they want a local copy. If making a local copy, place it in `~/.claude/skills/<skill-name>-local/` (suffix `-local` to distinguish from the plugin version).
+
+### Bump the plugin version
+
+After editing any component in a marketplace plugin, bump the version in both `plugin.json` and the corresponding `marketplace.json` entry:
+
+- **MINOR bump** for changes to existing components (e.g. `4.3.0` → `4.4.0`)
+- **MAJOR bump** if new components were added (e.g. `4.3.0` → `5.0.0`)
+
+### Push changes
+
+After editing files in a marketplace git repo, run `/m:push` from the repo root to commit and push the changes.
 
 ## JSONL Schema Reference
 
