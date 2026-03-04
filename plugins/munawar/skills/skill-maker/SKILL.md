@@ -114,7 +114,7 @@ You can include:
 - Instructions
 - Examples
 - Context from commands: ! `git status`
-- Arguments from user: $ARGUMENTS or $0, $1, $2...
+- Arguments from user: $ ARGUMENTS or $ 0, $ 1, $ 2...
 ```
 
 ### Frontmatter Fields
@@ -132,18 +132,20 @@ You can include:
 
 ### Arguments System
 
+> **Meta note:** The examples below insert a space after `$` (writing `$ ARGUMENTS`, `$ 0`, `$ 1`, etc.) to prevent Claude Code's substitution engine from replacing them inside THIS skill's documentation. When writing your actual skill file, remove the space so the tokens work as injection points.
+
 **Passing arguments:**
 ```bash
 /skill-name arg1 arg2 arg3
 ```
 
 **Accessing in SKILL.md:**
-- `$ARGUMENTS` - All arguments as single string
-- `$ARGUMENTS[0]` or `$0` - First argument
-- `$ARGUMENTS[1]` or `$1` - Second argument
-- `$ARGUMENTS[N]` or `$N` - Nth argument (0-indexed)
+- `$ ARGUMENTS` - All arguments as single string
+- `$ ARGUMENTS[0]` or `$ 0` - First argument
+- `$ ARGUMENTS[1]` or `$ 1` - Second argument
+- `$ ARGUMENTS[N]` or `$ N` - Nth argument (0-indexed)
 
-**Key:** `$ARGUMENTS` is **text substitution**, not a shell variable. Claude Code replaces it with the literal argument text in the markdown *before* Claude sees the prompt. So just write `$ARGUMENTS` directly in your skill content — no `echo`, no backticks needed. If `$ARGUMENTS` is not referenced anywhere in the SKILL.md, Claude Code auto-appends `ARGUMENTS: <value>` at the end.
+**Key:** `$ ARGUMENTS` is **text substitution**, not a shell variable. Claude Code replaces it with the literal argument text in the markdown *before* Claude sees the prompt. So just write `$ ARGUMENTS` directly in your skill content — no `echo`, no backticks needed. If `$ ARGUMENTS` is not referenced anywhere in the SKILL.md, Claude Code auto-appends `ARGUMENTS: <value>` at the end.
 
 **Example:**
 ```yaml
@@ -152,21 +154,21 @@ name: migrate-component
 argument-hint: "[component] [from-framework] [to-framework]"
 ---
 
-Migrate the $0 component from $1 to $2.
+Migrate the $ 0 component from $ 1 to $ 2.
 
 Steps:
-1. Read the component at: $0
-2. Analyze $1 patterns
-3. Convert to $2 syntax
+1. Read the component at: $ 0
+2. Analyze $ 1 patterns
+3. Convert to $ 2 syntax
 4. Preserve all behavior and tests
 ```
 
 Running `/migrate-component SearchBar React Vue` gives:
-- `$0` = SearchBar
-- `$1` = React
-- `$2` = Vue
+- `$ 0` = SearchBar
+- `$ 1` = React
+- `$ 2` = Vue
 
-**Limitation — no "rest of args" syntax:** `$N` always resolves to a single word. There is no built-in way to get "everything after the first argument" as one string. If your skill takes an ID plus a free-form instruction (e.g. `/audit abc123 show me all the errors`), use `$0` for the ID where you need it (like in a script call), and `$ARGUMENTS` where you need the full string. Claude will see both and naturally understand the structure from context — no parsing instructions needed.
+**Limitation — no "rest of args" syntax:** `$ N` always resolves to a single word. There is no built-in way to get "everything after the first argument" as one string. If your skill takes an ID plus a free-form instruction (e.g. `/audit abc123 show me all the errors`), use `$ 0` for the ID where you need it (like in a script call), and `$ ARGUMENTS` where you need the full string. Claude will see both and naturally understand the structure from context — no parsing instructions needed.
 
 ### Dynamic Context with Commands
 
@@ -191,10 +193,10 @@ allowed-tools: Bash(gh *)
 - PR comments: ! `gh pr view --comments`
 
 ## Task
-$ARGUMENTS
+$ ARGUMENTS
 ```
 
-^ In the actual skill file, "!" must be directly touching the backtick with no space.
+^ In the actual skill file, "!" must be directly touching the backtick with no space, and remove the space after `$` in `$ ARGUMENTS`.
 
 ### Environment Variables Available
 
@@ -214,12 +216,12 @@ context: fork
 agent: Explore
 ---
 
-Investigate: $ARGUMENTS
+Investigate: $ ARGUMENTS
 
 Approach:
 1. Search for related files and code
 2. Read key implementations
-3. Document findings in docs/YYYY-MM-DD_HHMMhrs_$0.md
+3. Document findings in docs/YYYY-MM-DD_HHMMhrs_$ 0.md
 4. Provide summary
 ```
 
@@ -231,7 +233,7 @@ description: Prepare branch for PR
 allowed-tools: Bash(git *, gh *)
 ---
 
-Prepare branch for PR: $ARGUMENTS
+Prepare branch for PR: $ ARGUMENTS
 
 Steps:
 1. Check git status
@@ -249,7 +251,7 @@ description: Generate React component with tests
 argument-hint: "[component-name] [component-type]"
 ---
 
-Generate a $1 component named $0.
+Generate a $ 1 component named $ 0.
 
 Requirements:
 - TypeScript
@@ -267,7 +269,7 @@ description: Fetch and save web content for research
 argument-hint: "[url] [topic-name]"
 ---
 
-Fetch content from $0 and save it under the topic "$1".
+Fetch content from $ 0 and save it under the topic "$ 1".
 
 ## Supporting Files
 See [scripts/fetch_content.py](scripts/fetch_content.py) for the content fetcher.
@@ -275,7 +277,7 @@ See [scripts/fetch_content.py](scripts/fetch_content.py) for the content fetcher
 ## Steps
 1. Run the bundled script:
    ```bash
-   uv run --with requests python ~/.claude/skills/research-tool/scripts/fetch_content.py "$0" "/tmp/research/$1"
+   uv run --with requests python ~/.claude/skills/research-tool/scripts/fetch_content.py "$ 0" "/tmp/research/$ 1"
    ```
 2. Read the saved output and summarize key points
 ```
@@ -314,7 +316,7 @@ See [scripts/tool.py](scripts/tool.py) for the utility script.
 
 ## Instructions
 
-$ARGUMENTS
+$ ARGUMENTS
 
 ### Routing: read the user instruction first
 
@@ -389,7 +391,7 @@ After creating a skill, suggest the user run it on a real-world use case, then u
 3. **Design frontmatter** - Set appropriate fields
 4. **Write skill prompt** - Clear instructions for Claude
    - If the skill has a multi-step workflow, consider whether a routing gate (see Common Patterns #6) would make it more flexible
-5. **Add argument handling** - Use `$ARGUMENTS` or positional vars if needed
+5. **Add argument handling** - Use `$ ARGUMENTS` or positional vars if needed
 6. **Determine placement** - Figure out whether this repo is a skills/plugin container or a real project. Check these signals:
    - The repo/directory name or CWD path contains "plugin", "skills", or "marketplace"
    - A `plugin.json` exists somewhere in the repo
@@ -460,7 +462,7 @@ After creating the skill, run this validation workflow:
 
     **d) Skill firing / context injection issues:**
     - **If the skill uses "!" backtick commands**: verify the command output appears as literal text in the first assistant message's context (not as a command to be run). If the agent is *running* the command itself via Bash tool, the "!" backtick preprocessing failed.
-    - **If the skill uses `$ARGUMENTS`**: verify the arguments were substituted as literal text, not left as `$ARGUMENTS` or `$0` etc.
+    - **If the skill uses `$ ARGUMENTS`**: verify the arguments were substituted as literal text, not left as `$ ARGUMENTS` or `$ 0` etc.
     - **If the skill uses `context: fork`**: verify a separate subagent JSONL was created (the skill should NOT have run in the main session)
     - **If the skill uses `agent: Explore` or similar**: verify the session used that agent type
     - **If the skill uses `allowed-tools`**: verify no tool calls outside the whitelist were attempted
