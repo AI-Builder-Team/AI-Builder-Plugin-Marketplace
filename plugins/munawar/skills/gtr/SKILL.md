@@ -35,7 +35,7 @@ You handle these modes based on the user's request:
 - Current branch: !`git branch --show-current 2>/dev/null || echo "N/A"`
 - Existing worktrees: !`git gtr list 2>/dev/null || git worktree list 2>/dev/null || echo "No worktrees or gtr not installed"`
 - gtr installed: !`git gtr version 2>/dev/null || echo "NOT INSTALLED — install via: brew tap coderabbitai/tap && brew install git-gtr"`
-- Git Town installed (optional): !`git town version 2>/dev/null || echo "NOT INSTALLED (optional) — install via: brew install git-town"`
+- Git Town installed (optional): !`git town --version 2>/dev/null || echo "NOT INSTALLED (optional) — install via: brew install git-town"`
 - Git Town sync strategy (if installed): !`git config git-town.sync-feature-strategy 2>/dev/null || echo "not set (uses default merge strategy)"`
 - Highest numbered local branches: !`git branch | grep -E '^ *[0-9]+' | sed 's/^[ *]*//' | sort -t'-' -k1 -n | tail -5 2>/dev/null || echo "No numbered branches found"`
 
