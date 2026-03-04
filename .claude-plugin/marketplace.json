@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Klair team Claude Code plugins for development workflows",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "pluginRoot": "./plugins"
   },
   "plugins": [
@@ -21,7 +21,7 @@
       "name": "m",
       "source": "./plugins/munawar",
       "description": "Personal developer toolkit - Git worktree management, PR workflows, code quality, issue triage, plugin packaging, web research, and writing tools",
-      "version": "5.0.1",
+      "version": "1.1.0",
       "category": "development",
       "tags": ["git", "pr-review", "code-quality", "issue-triage", "plugin-packaging", "web-research", "dev-tools", "agent-maker", "session-audit", "grill-me"]
     },
