@@ -132,43 +132,11 @@ You can include:
 
 ### Arguments System
 
-> **Meta note:** The examples below insert a space after `$` (writing `$ ARGUMENTS`, `$ 0`, `$ 1`, etc.) to prevent Claude Code's substitution engine from replacing them inside THIS skill's documentation. When writing your actual skill file, remove the space so the tokens work as injection points.
+`$ ARGUMENTS` inserts all args as a single string; `$ 0`, `$ 1`, `$N` insert positional args (0-indexed). These are text-substituted into the prompt before Claude sees it. Use `argument-hint` in frontmatter to show users what to pass.
 
-**Passing arguments:**
-```bash
-/skill-name arg1 arg2 arg3
-```
+> **Escaping note:** Throughout this skill's documentation, argument tokens are written with a space after the dollar sign (e.g. `$ ARGUMENTS`, `$ 0`) to prevent them from being substituted when *this* skill runs. In any skill you create, write them without the space: `$N`, etc.
 
-**Accessing in SKILL.md:**
-- `$ ARGUMENTS` - All arguments as single string
-- `$ ARGUMENTS[0]` or `$ 0` - First argument
-- `$ ARGUMENTS[1]` or `$ 1` - Second argument
-- `$ ARGUMENTS[N]` or `$ N` - Nth argument (0-indexed)
-
-**Key:** `$ ARGUMENTS` is **text substitution**, not a shell variable. Claude Code replaces it with the literal argument text in the markdown *before* Claude sees the prompt. So just write `$ ARGUMENTS` directly in your skill content — no `echo`, no backticks needed. If `$ ARGUMENTS` is not referenced anywhere in the SKILL.md, Claude Code auto-appends `ARGUMENTS: <value>` at the end.
-
-**Example:**
-```yaml
----
-name: migrate-component
-argument-hint: "[component] [from-framework] [to-framework]"
----
-
-Migrate the $ 0 component from $ 1 to $ 2.
-
-Steps:
-1. Read the component at: $ 0
-2. Analyze $ 1 patterns
-3. Convert to $ 2 syntax
-4. Preserve all behavior and tests
-```
-
-Running `/migrate-component SearchBar React Vue` gives:
-- `$ 0` = SearchBar
-- `$ 1` = React
-- `$ 2` = Vue
-
-**Limitation — no "rest of args" syntax:** `$ N` always resolves to a single word. There is no built-in way to get "everything after the first argument" as one string. If your skill takes an ID plus a free-form instruction (e.g. `/audit abc123 show me all the errors`), use `$ 0` for the ID where you need it (like in a script call), and `$ ARGUMENTS` where you need the full string. Claude will see both and naturally understand the structure from context — no parsing instructions needed.
+See [reference/passing-arguments.md](reference/passing-arguments.md) for full details, examples, and limitations.
 
 ### Dynamic Context with Commands
 
