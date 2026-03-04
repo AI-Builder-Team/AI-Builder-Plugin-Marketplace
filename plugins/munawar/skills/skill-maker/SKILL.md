@@ -390,29 +390,20 @@ After creating a skill, suggest the user run it on a real-world use case, then u
 4. **Write skill prompt** - Clear instructions for Claude
    - If the skill has a multi-step workflow, consider whether a routing gate (see Common Patterns #6) would make it more flexible
 5. **Add argument handling** - Use `$ARGUMENTS` or positional vars if needed
-6. **Determine placement** - Decide where to create the skill based on the current context. Run these checks in order and use the first match:
+6. **Determine placement** - Figure out whether this repo is a skills/plugin container or a real project. Check these signals:
+   - The repo/directory name or CWD path contains "plugin", "skills", or "marketplace"
+   - A `plugin.json` exists somewhere in the repo
+   - The repo has a `skills/` directory with existing skill folders in it
 
-   **a) Inside a plugin path in a marketplace repo:**
-   If the current working directory is inside a specific plugin directory (i.e. the CWD path contains `plugins/<author>/`), create the skill in that plugin's `skills/` directory. Detect this by checking if `$(pwd)` matches `*/plugins/*/` and a `.claude-plugin/plugin.json` exists for that plugin. Apply plugin naming rules (prefix with plugin name, use `${CLAUDE_PLUGIN_ROOT}` for paths).
-   → Target: `<plugin-root>/skills/[skill-name]/SKILL.md`
+   **If this looks like a skills/plugin repo:** Create the skill here. Find the nearest `skills/` directory relative to CWD and create inside it. If the CWD is at the repo root and there are multiple plugin directories (each with their own `skills/`), ask the user which one. If a `plugin.json` exists, read it for the plugin name and apply plugin naming rules (prefix, `${CLAUDE_PLUGIN_ROOT}` paths).
 
-   **b) In a marketplace repo but NOT inside a plugin path:**
-   If the project root has `.claude-plugin/marketplace.json` (it's a marketplace repo) but the CWD is not inside a specific `plugins/<author>/` path, then **ask the user** which plugin to add the skill to. List the available plugins under `plugins/` and let them pick. If the user says "home" or "personal", fall through to (d).
-   → Target: after user picks, `plugins/<chosen>/skills/[skill-name]/SKILL.md`
+   **If the user explicitly says "home", "personal", or "global":** Create at `~/.claude/skills/[skill-name]/SKILL.md`.
 
-   **c) In a standalone plugin repo (not a marketplace):**
-   If the project root has `.claude-plugin/plugin.json` but NOT `marketplace.json`, create the skill in this plugin's `skills/` directory. Apply plugin naming rules.
-   → Target: `<project-root>/skills/[skill-name]/SKILL.md`
+   **If the user explicitly says "project" or "project skill":** Create at `<project-root>/.claude/skills/[skill-name]/SKILL.md`.
 
-   **d) User explicitly requests project-local placement:**
-   If the user says "create in the project" or "project skill", create in the current project's `.claude/skills/` directory.
-   → Target: `<project-root>/.claude/skills/[skill-name]/SKILL.md`
+   **Otherwise (regular project repo, no plugin signals):** Default to `~/.claude/skills/[skill-name]/SKILL.md`.
 
-   **e) Default — personal global skill:**
-   If none of the above apply (regular project repo, no plugin context), create at the home directory location.
-   → Target: `~/.claude/skills/[skill-name]/SKILL.md`
-
-7. **Bundle any helper scripts** - If the skill needs utilities (Python scripts, shell scripts), put them in `[skill-name]/scripts/` and reference via markdown links in SKILL.md. Use `${CLAUDE_PLUGIN_ROOT}` for paths if the skill is in a plugin (cases a/b/c above), or `~/.claude/skills/` for personal skills (case e).
+7. **Bundle any helper scripts** - If the skill needs utilities (Python scripts, shell scripts), put them in `[skill-name]/scripts/` and reference via markdown links in SKILL.md. Use `${CLAUDE_PLUGIN_ROOT}` for paths if the skill is in a plugin, or `~/.claude/skills/` for personal skills.
 8. **Provide usage example** - Show how to invoke it
 
 Ask clarifying questions if the request is ambiguous. Otherwise, proceed to create the skill.
