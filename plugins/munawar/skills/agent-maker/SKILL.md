@@ -280,7 +280,7 @@ When a skill or agent launches other agents, include the exact prompt template. 
 Each agent prompt MUST follow this template exactly:
 
   Investigate this PR review concern:
-  **PR_Comments_File:** <absolute path to $ARGUMENTS>
+  **PR_Comments_File:** <absolute path filled in by orchestrator>
   **PR_Comment_Issue_Line(s):** <line numbers>
   **Concern:** <the reviewer's comment text>
 
