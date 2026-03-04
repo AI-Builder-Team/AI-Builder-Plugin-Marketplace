@@ -283,6 +283,45 @@ disable-model-invocation: true
 
 ^ In the actual skill file, remove the space between "!" and the backtick.
 
+**6. Routing Gate for Workflow Skills:**
+
+When a skill has a stepwise workflow *and* reusable domain knowledge (scripts, schemas, conventions), add a routing section at the top of Instructions that lets the user bypass the default pipeline:
+
+```yaml
+---
+name: my-workflow
+description: Run a structured workflow or use its tools freely
+---
+
+# My Workflow Skill
+
+## Supporting Files
+See [scripts/tool.py](scripts/tool.py) for the utility script.
+
+## Instructions
+
+### Routing: read the user instruction first
+
+Decide which path to follow before doing anything else:
+
+- **Custom objective**: If the user's instruction asks for something
+  other than the default workflow (e.g. a specific question, a
+  different analysis, a one-off use of the bundled scripts), then
+  use whatever combination of the scripts and context below to
+  achieve their objective. You are not bound to the workflow steps.
+
+- **Default workflow** (when no instruction is provided, or when the
+  user explicitly requests the standard workflow): Follow Steps 1–N
+  below in sequence.
+
+### Step 1: ...
+```
+
+Use this pattern when:
+- The skill has a narrow multi-step workflow that would be too rigid for all use cases
+- The skill bundles scripts, schemas, or domain knowledge that are independently useful
+- Users might invoke the skill to leverage its context without wanting the full pipeline
+
 ### Best Practices
 
 1. **Use clear, specific names** - Prefix with `m-` for meta/custom skills
@@ -293,6 +332,7 @@ disable-model-invocation: true
 6. **Use arguments for flexibility** - Make skills reusable
 7. **Test with various inputs** - Ensure argument handling works
 8. **Bundle helper scripts in `scripts/`** - Keep skills self-contained; reference via markdown links in SKILL.md
+9. **Consider a routing gate for workflow skills** - If your skill has a stepwise workflow, consider adding a routing section at the top of Instructions that lets the user's custom objective bypass the default steps while still leveraging the skill's knowledge and scripts. This makes the skill useful for a wider range of tasks without losing its default behavior (see Common Patterns #6)
 
 ### Testing Your Skill
 
@@ -313,6 +353,7 @@ Now, based on the request "$ARGUMENTS", create a new skill:
 2. **Choose skill name** - Follow convention (lowercase, hyphens, prefix `m-` if custom)
 3. **Design frontmatter** - Set appropriate fields
 4. **Write skill prompt** - Clear instructions for Claude
+   - If the skill has a multi-step workflow, consider whether a routing gate (see Common Patterns #6) would make it more flexible
 5. **Add argument handling** - Use `$ARGUMENTS` or positional vars if needed
 6. **Create the skill** - Write to `~/.claude/skills/[skill-name]/SKILL.md`
 7. **Bundle any helper scripts** - If the skill needs utilities (Python scripts, shell scripts), put them in `[skill-name]/scripts/` and reference via markdown links in SKILL.md

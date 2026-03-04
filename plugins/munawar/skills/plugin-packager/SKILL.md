@@ -14,6 +14,14 @@ The user said:
 
 > $ARGUMENTS
 
+## Routing: read the user instruction first
+
+Decide which path to follow before doing anything else:
+
+- **Custom objective**: If the user's instruction asks for something other than packaging components into a plugin (e.g. inspecting a plugin's structure, updating a single field in plugin.json, comparing versions, listing components, debugging a plugin install issue), then use the plugin structure knowledge, naming conventions, and rules documented below to achieve their objective directly. You are not bound to the packaging workflow — treat the steps and rules as reference material.
+
+- **Standard packaging** (default when the instruction describes components to package, or mentions "package", "bundle", "create plugin", "update plugin"): Follow Steps 0–6 below in sequence.
+
 ## Step 0: Understand the request
 
 Parse the user's natural language request to extract:
@@ -224,3 +232,15 @@ After all operations:
 - Default to `cp` (copy). Only use `mv` (migrate) if the user explicitly asks to move/migrate. If moving, remove the source directory afterward only if fully emptied.
 - If the source directory also contains `settings.json`, `settings.local.json`, or `CLAUDE.md`, do NOT copy/move those -- they are project config, not plugin components. Leave them in place.
 - **Skill names MUST use the plugin name prefix.** Every `SKILL.md` frontmatter `name:` field must be prefixed with `<plugin-name>:` where `<plugin-name>` is the `name` field from the plugin's `plugin.json` (e.g., if `plugin.json` has `"name": "m"`, then skills are `m:skill-name`; if `"name": "klair-legacy"`, then `klair-legacy:skill-name`). During packaging, read `plugin.json` to get the plugin name, then check each skill's `name:` field — if the prefix is missing, add it. This ensures skills are namespaced correctly when installed.
+
+## Editing existing plugin files — cache vs source
+
+When the custom objective path involves editing an existing plugin's files (not fresh packaging), resolve the correct edit location first.
+
+1. **Cache detection**: Any path containing `/.claude/plugins/cache/` is a read-only installed copy. NEVER edit these files — changes will be overwritten on next install/update.
+2. **Source resolution**: If the current working directory is the plugin marketplace repo (look for `.claude-plugin/marketplace.json` at the project root), the source lives under `plugins/` in the current project. Map from the cache path: `~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/skills/<skill>/` → `<cwd>/plugins/<author>/skills/<skill>/`.
+3. **Fallback when source is not local**: If the current project is NOT the marketplace repo, do NOT guess the source location. Tell the user the file needs to be updated at its source and ask them to point you to the marketplace repo or confirm they want a local copy.
+
+## After any edit — push changes
+
+After editing files in a marketplace git repo (whether through standard packaging or the custom objective path), run `/m:push` from the repo root to commit and push the changes.
