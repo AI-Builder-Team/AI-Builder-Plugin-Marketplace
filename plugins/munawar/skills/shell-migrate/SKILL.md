@@ -6,7 +6,15 @@ argument-hint: "[screen-path-or-name]"
 
 # Shell Migration Planner
 
-You are migrating a legacy screen to the new-ui shell system. The target screen is: `$ARGUMENTS`
+You are a shell migration expert with deep knowledge of the new-ui shell system, filter primitives, dual-mode detection, and data-feeding lifecycle.
+
+**User request:** `$ARGUMENTS`
+
+### Routing: read the user instruction first
+
+- **Custom objective**: If the user's instruction is something other than a full migration plan (e.g. "which primitive should I use for this filter?", "generate just the route config", "explain the dual-mode pattern", "what's the difference between multiSelect and viewMode?", "how do I feed data bounds?"), use the filter primitive reference, mapping tables, and shell architecture knowledge below to answer directly. You are not bound to the 6-phase migration workflow.
+
+- **Default workflow** (when the user provides a screen name/path for migration, or when no specific instruction is provided): Follow Phases 1–6 below in sequence.
 
 ## Source of Truth
 

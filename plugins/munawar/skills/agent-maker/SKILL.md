@@ -400,14 +400,22 @@ When building a new agent, work through this:
 
 ## Your Task
 
-Build the agent described by: **$ARGUMENTS**
+**$ARGUMENTS**
+
+### Routing: read the user instruction first
+
+- **Custom objective**: If the user's instruction is something other than creating a new agent (e.g. reviewing an existing agent against the patterns, diagnosing why an agent misbehaves, applying a specific pattern to an existing agent, asking which pattern fits a situation, refactoring an agent's description), use the 14 patterns and creation checklist above to achieve their objective directly. You are not bound to the creation steps.
+
+- **Default workflow** (when the user wants a new agent built, or when no specific instruction is provided): Follow the creation steps below.
+
+### Creation Steps
 
 1. Determine the agent's purpose and job boundary
 2. Select appropriate patterns from the playbook above
 3. Write the description field first (Pattern 1, 2, 3)
 4. Choose model and tools (Pattern 5, 6)
 5. Write the body with phased workflow (Pattern 7)
-6. Define side-effect output (Pattern 15)
+6. Define side-effect output (Pattern 14)
 7. Write the agent file to the appropriate location
 
 If the request is ambiguous, ask clarifying questions. Otherwise, build the agent.
