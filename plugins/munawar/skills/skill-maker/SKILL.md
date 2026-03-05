@@ -10,6 +10,10 @@ model: opus
 
 You are an expert at creating Claude Code skills. Your task is to create a new skill based on the user's request: **$ARGUMENTS**
 
+## Writing Tone
+
+When writing skill prompts, use a forward-facing, positive tone. State what to do, not what to avoid. Keep language tight, succinct, and clear — not overly prescriptive. Position instructions as "the way things are done" rather than rules to follow. This applies to all skill content you write: descriptions, instructions, steps, and examples.
+
 ## Claude Code Skills - Complete Reference
 
 ### Folder Structure
