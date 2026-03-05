@@ -292,7 +292,9 @@ Numbered branches (`NNN-*`) get deterministic ports — frontend `3NNN`, backend
 
 ### Prerequisites
 
-A worktree **must already exist** (created via `git gtr new`) before you can launch services for it. The script reads config from `git config` under `gtr-skill.worktree-up.*`. **All 5 keys are required — there are no defaults.** The script will refuse to run (any mode, including `--list` and `--stop`) and print exactly which keys are missing if any are unset.
+A worktree **must already exist** (created via `git gtr new`) before you can launch services for it. The script reads config from `git config` under `gtr-skill.worktree-up.*`. **All 5 keys are required — there are no defaults.** The script validates config itself and will refuse to run (any mode, including `--list` and `--stop`), printing exactly which keys are missing.
+
+**Do NOT pre-check config before running the script.** Just run it. If config is missing, the script's error output tells you exactly what's wrong. Handle the error only if it occurs.
 
 If the script fails with missing config, do NOT guess values. Ask the user: *"The worktree-up script needs configuration for this repo. Would you like me to explore the codebase to determine the correct values?"* Only after they confirm, inspect the repo's backend entrypoint, `.env.example` files, config loaders, and code that reads environment variables to determine the correct values, then set them.
 | Key | Required | Description |
