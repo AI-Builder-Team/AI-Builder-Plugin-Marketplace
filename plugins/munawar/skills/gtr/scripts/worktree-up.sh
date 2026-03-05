@@ -21,21 +21,21 @@
 #
 # Prerequisites:
 #   - git gtr installed (brew tap coderabbitai/tap && brew install git-gtr)
-#   - All 5 git config keys under gtr.worktree-up.* MUST be set (no defaults).
+#   - All 5 git config keys under gtr-skill.worktree-up.* MUST be set (no defaults).
 #     The script will refuse to run ANY command if any are missing.
 #
-# Configuration (git config under gtr.worktree-up.* — ALL REQUIRED):
-#   git config gtr.worktree-up.backend-dir "api"
-#   git config gtr.worktree-up.backend-cmd "python main.py"
-#   git config gtr.worktree-up.frontend-dir "client"
-#   git config gtr.worktree-up.frontend-cmd "pnpm dev --port {port}"
-#   git config gtr.worktree-up.frontend-env-var "VITE_API_URL"
+# Configuration (git config under gtr-skill.worktree-up.* — ALL REQUIRED):
+#   git config gtr-skill.worktree-up.backend-dir "api"
+#   git config gtr-skill.worktree-up.backend-cmd "python main.py"
+#   git config gtr-skill.worktree-up.frontend-dir "client"
+#   git config gtr-skill.worktree-up.frontend-cmd "pnpm dev --port {port}"
+#   git config gtr-skill.worktree-up.frontend-env-var "VITE_API_URL"
 
 set -euo pipefail
 
 # ── Configuration (from git config — no defaults, must be explicit) ─
 
-_gc() { git config "gtr.worktree-up.$1" 2>/dev/null || true; }
+_gc() { git config "gtr-skill.worktree-up.$1" 2>/dev/null || true; }
 
 BACKEND_DIR=$(_gc backend-dir)
 BACKEND_CMD=$(_gc backend-cmd)
@@ -58,19 +58,19 @@ check_config() {
         echo "" >&2
         echo "Missing git config keys:" >&2
         for key in "${missing[@]}"; do
-            echo "  gtr.worktree-up.$key" >&2
+            echo "  gtr-skill.worktree-up.$key" >&2
         done
         echo "" >&2
         echo "Run these commands to configure (adjust values for your project):" >&2
         echo "" >&2
-        echo "  git config gtr.worktree-up.backend-dir \"<backend-subdir>\"" >&2
-        echo "  git config gtr.worktree-up.backend-cmd \"<command to start backend>\"" >&2
-        echo "  git config gtr.worktree-up.frontend-dir \"<frontend-subdir>\"" >&2
-        echo "  git config gtr.worktree-up.frontend-cmd \"<command to start frontend>\"" >&2
-        echo "  git config gtr.worktree-up.frontend-env-var \"<VITE_API_URL or similar>\"" >&2
+        echo "  git config gtr-skill.worktree-up.backend-dir \"<backend-subdir>\"" >&2
+        echo "  git config gtr-skill.worktree-up.backend-cmd \"<command to start backend>\"" >&2
+        echo "  git config gtr-skill.worktree-up.frontend-dir \"<frontend-subdir>\"" >&2
+        echo "  git config gtr-skill.worktree-up.frontend-cmd \"<command to start frontend>\"" >&2
+        echo "  git config gtr-skill.worktree-up.frontend-env-var \"<VITE_API_URL or similar>\"" >&2
         echo "" >&2
         echo "Current config:" >&2
-        git config --get-regexp 'gtr.worktree-up' 2>/dev/null | sed 's/^/  /' >&2 || echo "  (none set)" >&2
+        git config --get-regexp 'gtr-skill.worktree-up' 2>/dev/null | sed 's/^/  /' >&2 || echo "  (none set)" >&2
         exit 1
     fi
 }
@@ -309,12 +309,12 @@ do_launch() {
     # Validate
     if [[ ! -d "$api_dir" ]]; then
         err "Backend dir not found: $api_dir"
-        err "Fix via: git config gtr.worktree-up.backend-dir \"<correct-subdir>\""
+        err "Fix via: git config gtr-skill.worktree-up.backend-dir \"<correct-subdir>\""
         exit 1
     fi
     if [[ ! -d "$client_dir" ]]; then
         err "Frontend dir not found: $client_dir"
-        err "Fix via: git config gtr.worktree-up.frontend-dir \"<correct-subdir>\""
+        err "Fix via: git config gtr-skill.worktree-up.frontend-dir \"<correct-subdir>\""
         exit 1
     fi
 

@@ -152,7 +152,13 @@ Use when the user wants to create a new worktree, spin up a branch, or start new
    - NEVER use `--from-current` when the branch already exists
    - Do NOT use `--folder` — let gtr derive the folder name from the branch name
 
-6. **Multiple worktrees** — repeat steps 3-5 for each branch if user requests multiple.
+6. **Register Git Town parent** (skip if Git Town is not installed):
+   ```bash
+   git config "git-town-branch.<branch>.parent" main
+   ```
+   This prevents the interactive prompt on the next `git town sync`.
+
+7. **Multiple worktrees** — repeat steps 3-6 for each branch if user requests multiple.
 
 <when condition="user explicitly asks to 'spin up', 'open terminal', 'open ghostty', or 'launch' a worktree">
 6. **Open Ghostty terminal in the new worktree:**
@@ -286,25 +292,24 @@ Numbered branches (`NNN-*`) get deterministic ports — frontend `3NNN`, backend
 
 ### Prerequisites
 
-A worktree **must already exist** (created via `git gtr new`) before you can launch services for it. The script reads config from `git config` under `gtr.worktree-up.*`. **All 5 keys are required — there are no defaults.** The script will refuse to run (any mode, including `--list` and `--stop`) and print exactly which keys are missing if any are unset.
+A worktree **must already exist** (created via `git gtr new`) before you can launch services for it. The script reads config from `git config` under `gtr-skill.worktree-up.*`. **All 5 keys are required — there are no defaults.** The script will refuse to run (any mode, including `--list` and `--stop`) and print exactly which keys are missing if any are unset.
 
-If the script fails with missing config, do NOT guess values — inspect the repo's directory structure and `.env` files to determine the correct values, then set them.
-
+If the script fails with missing config, do NOT guess values. Ask the user: *"The worktree-up script needs configuration for this repo. Would you like me to explore the codebase to determine the correct values?"* Only after they confirm, inspect the repo's backend entrypoint, `.env.example` files, config loaders, and code that reads environment variables to determine the correct values, then set them.
 | Key | Required | Description |
 |---|---|---|
-| `gtr.worktree-up.backend-dir` | Yes | Subdirectory containing the backend |
-| `gtr.worktree-up.backend-cmd` | Yes | Command to start the backend. Use `{port}` placeholder for the port (e.g. `"uvicorn main:app --port {port}"`). If omitted, `PORT` env var is set instead. |
-| `gtr.worktree-up.frontend-dir` | Yes | Subdirectory containing the frontend |
-| `gtr.worktree-up.frontend-cmd` | Yes | Command to start the frontend. Use `{port}` placeholder for the port (e.g. `"pnpm dev --port {port}"`). If omitted, `--port <N>` is appended automatically. |
-| `gtr.worktree-up.frontend-env-var` | Yes | Env var to point frontend at the backend URL |
+| `gtr-skill.worktree-up.backend-dir` | Yes | Subdirectory containing the backend |
+| `gtr-skill.worktree-up.backend-cmd` | Yes | Command to start the backend. Use `{port}` placeholder for the port (e.g. `"uvicorn main:app --port {port}"`). If omitted, `PORT` env var is set instead. |
+| `gtr-skill.worktree-up.frontend-dir` | Yes | Subdirectory containing the frontend |
+| `gtr-skill.worktree-up.frontend-cmd` | Yes | Command to start the frontend. Use `{port}` placeholder for the port (e.g. `"pnpm dev --port {port}"`). If omitted, `--port <N>` is appended automatically. |
+| `gtr-skill.worktree-up.frontend-env-var` | Yes | Env var to point frontend at the backend URL |
 
 Example setup (adjust values for your project):
 ```bash
-git config gtr.worktree-up.backend-dir "api"
-git config gtr.worktree-up.backend-cmd "python main.py"
-git config gtr.worktree-up.frontend-dir "client"
-git config gtr.worktree-up.frontend-cmd "pnpm dev --port {port}"
-git config gtr.worktree-up.frontend-env-var "VITE_API_URL"
+git config gtr-skill.worktree-up.backend-dir "api"
+git config gtr-skill.worktree-up.backend-cmd "python main.py"
+git config gtr-skill.worktree-up.frontend-dir "client"
+git config gtr-skill.worktree-up.frontend-cmd "pnpm dev --port {port}"
+git config gtr-skill.worktree-up.frontend-env-var "VITE_API_URL"
 ```
 
 ### Runtime port override requirement
