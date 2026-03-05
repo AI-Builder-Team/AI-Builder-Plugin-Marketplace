@@ -18,11 +18,11 @@ $ARGUMENTS
 
 Never edit files under `~/.claude/plugins/cache/` — that's a read-only installed copy.
 
-To find the editable source, first figure out what kind of repo you're in. If the CWD path or directory name contains "plugin", "skills", or "marketplace", or there's a `skills/` directory with skill folders in it, you're likely in a plugin or a skills repo — search children folders excluding .claude generally or the  `plugins/*/skills/*/SKILL.md` for a match. If not found, check these fallbacks:
+To find the editable source, first figure out what kind of repo you're in. If the CWD path or directory name contains "plugin", "skills", or "marketplace", or there's a `skills/` directory with skill folders in it, you're likely in a plugin or skills repo — search `plugins/*/skills/*/SKILL.md` and `skills/*/SKILL.md` relative to the repo root. If not found, check these fallbacks:
 
-1. **Home directory skills** — `~/.claude/skills/` for personal skills.
-2. **Project-local skills** — `.claude/skills/` in whatever project you're working in.
-3. **Ask the user** — if you can't find the source in any of those places, ask where it lives.
+1. **Home skills** — `~/.claude/skills/<skill-name>/SKILL.md`
+2. **Project-local skills** — `<project-root>/.claude/skills/<skill-name>/SKILL.md`
+3. **Ask the user** — If not found at the above places, ask the user where it lives. Seek guidance instead of searching further.
 
 Once found, read the SKILL.md and every file in the skill directory (scripts/, reference/,  docs/, assets/ etc.). Especially important are any paths referenced in the SKILL.md
 
