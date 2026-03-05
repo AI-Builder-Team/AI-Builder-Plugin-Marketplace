@@ -286,29 +286,25 @@ Numbered branches (`NNN-*`) get deterministic ports — frontend `3NNN`, backend
 
 ### Prerequisites
 
-A worktree **must already exist** (created via `git gtr new`) before you can launch services for it. The script reads config from `git config` under `gtr.worktree-up.*`. **All 5 keys are required — there are no defaults.** The script will refuse to launch and print exactly which keys are missing if any are unset.
+A worktree **must already exist** (created via `git gtr new`) before you can launch services for it. The script reads config from `git config` under `gtr.worktree-up.*`. **All 5 keys are required — there are no defaults.** The script will refuse to run (any mode, including `--list` and `--stop`) and print exactly which keys are missing if any are unset.
 
-Before running `worktree-up.sh`, check if config is set:
-```bash
-git config --get-regexp 'gtr.worktree-up' 2>/dev/null
-```
-If no output or keys are missing, set them first. Do NOT guess values — inspect the repo's directory structure and `.env` files to determine the correct values.
+If the script fails with missing config, do NOT guess values — inspect the repo's directory structure and `.env` files to determine the correct values, then set them.
 
 | Key | Required | Description |
 |---|---|---|
 | `gtr.worktree-up.backend-dir` | Yes | Subdirectory containing the backend |
-| `gtr.worktree-up.backend-cmd` | Yes | Command to start the backend |
+| `gtr.worktree-up.backend-cmd` | Yes | Command to start the backend. Use `{port}` placeholder for the port (e.g. `"uvicorn main:app --port {port}"`). If omitted, `PORT` env var is set instead. |
 | `gtr.worktree-up.frontend-dir` | Yes | Subdirectory containing the frontend |
-| `gtr.worktree-up.frontend-cmd` | Yes | Command to start the frontend |
+| `gtr.worktree-up.frontend-cmd` | Yes | Command to start the frontend. Use `{port}` placeholder for the port (e.g. `"pnpm dev --port {port}"`). If omitted, `--port <N>` is appended automatically. |
 | `gtr.worktree-up.frontend-env-var` | Yes | Env var to point frontend at the backend URL |
 
-Example setup:
+Example setup (adjust values for your project):
 ```bash
-git config gtr.worktree-up.backend-dir "klair-api"
-git config gtr.worktree-up.backend-cmd "python fast_endpoint.py"
-git config gtr.worktree-up.frontend-dir "klair-client"
-git config gtr.worktree-up.frontend-cmd "pnpm dev"
-git config gtr.worktree-up.frontend-env-var "VITE_AI_ADOPTION_API_URL"
+git config gtr.worktree-up.backend-dir "api"
+git config gtr.worktree-up.backend-cmd "python main.py"
+git config gtr.worktree-up.frontend-dir "client"
+git config gtr.worktree-up.frontend-cmd "pnpm dev --port {port}"
+git config gtr.worktree-up.frontend-env-var "VITE_API_URL"
 ```
 
 ### Runtime port override requirement
@@ -361,7 +357,7 @@ tail -f /tmp/worktree-up/logs/<worktree>-frontend.log
 <when condition="user asks to launch services but the worktree does not exist yet">
 ### Create-then-launch flow
 1. Create the worktree first using Mode: create (`git gtr new <branch> --yes`)
-2. Ensure dependencies are installed (`uv sync` in `klair-api/`, `pnpm install` in `klair-client/`)
+2. Ensure dependencies are installed in the backend and frontend subdirectories
 3. Ensure `.env` files are copied (the create worktree script handles this)
 4. Then launch: `bash scripts/worktree-up.sh <number>`
 </when>

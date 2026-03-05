@@ -16,17 +16,20 @@
 #   Numbered branches (NNN-*):        frontend 3NNN, backend 8NNN
 #   Unnumbered (including main):      auto-finds next free slot (3001/8001, 3002/8002, ...)
 #
+# Port injection: Use {port} in backend-cmd or frontend-cmd to place the port.
+#   If {port} is absent: backend gets PORT env var, frontend gets --port appended.
+#
 # Prerequisites:
 #   - git gtr installed (brew tap coderabbitai/tap && brew install git-gtr)
 #   - All 5 git config keys under gtr.worktree-up.* MUST be set (no defaults).
-#     The script will refuse to launch if any are missing.
+#     The script will refuse to run ANY command if any are missing.
 #
 # Configuration (git config under gtr.worktree-up.* — ALL REQUIRED):
-#   git config gtr.worktree-up.backend-dir "klair-api"
-#   git config gtr.worktree-up.backend-cmd "python fast_endpoint.py"
-#   git config gtr.worktree-up.frontend-dir "klair-client"
-#   git config gtr.worktree-up.frontend-cmd "pnpm dev"
-#   git config gtr.worktree-up.frontend-env-var "VITE_AI_ADOPTION_API_URL"
+#   git config gtr.worktree-up.backend-dir "api"
+#   git config gtr.worktree-up.backend-cmd "python main.py"
+#   git config gtr.worktree-up.frontend-dir "client"
+#   git config gtr.worktree-up.frontend-cmd "pnpm dev --port {port}"
+#   git config gtr.worktree-up.frontend-env-var "VITE_API_URL"
 
 set -euo pipefail
 
@@ -40,7 +43,7 @@ FRONTEND_DIR=$(_gc frontend-dir)
 FRONTEND_CMD=$(_gc frontend-cmd)
 FRONTEND_ENV_VAR=$(_gc frontend-env-var)
 
-# ── Validate config (only needed for launch, not stop/list) ───────
+# ── Validate config ───────────────────────────────────────────────
 
 check_config() {
     local missing=()
@@ -291,7 +294,6 @@ do_list() {
 # ── Main: launch ─────────────────────────────────────────────────
 
 do_launch() {
-    check_config
     local arg="${1:-}"
     local name
     name=$(resolve_worktree "$arg")
@@ -360,7 +362,13 @@ do_launch() {
         set -a
         [[ -f .env ]] && source .env
         set +a
-        PORT=$BACKEND_PORT exec $BACKEND_CMD \
+        local cmd="$BACKEND_CMD"
+        if [[ "$cmd" == *"{port}"* ]]; then
+            cmd="${cmd//\{port\}/$BACKEND_PORT}"
+        else
+            export PORT=$BACKEND_PORT
+        fi
+        exec $cmd \
             > "$log_dir/${name}-backend.log" 2>&1
     ) &
     local be_pid=$!
@@ -371,7 +379,13 @@ do_launch() {
         cd "$client_dir"
         # Point frontend at the backend
         export "${FRONTEND_ENV_VAR}=http://localhost:${BACKEND_PORT}"
-        exec $FRONTEND_CMD --port "$FRONTEND_PORT" \
+        local cmd="$FRONTEND_CMD"
+        if [[ "$cmd" == *"{port}"* ]]; then
+            cmd="${cmd//\{port\}/$FRONTEND_PORT}"
+        else
+            cmd="$cmd --port $FRONTEND_PORT"
+        fi
+        exec $cmd \
             > "$log_dir/${name}-frontend.log" 2>&1
     ) &
     local fe_pid=$!
@@ -399,6 +413,13 @@ do_launch() {
         echo ""
     fi
 }
+
+# ── Preflight: config check for all modes except --help ──────────
+
+case "${1:-}" in
+    --help|-h) ;;
+    *) check_config ;;
+esac
 
 # ── CLI dispatch ─────────────────────────────────────────────────
 
