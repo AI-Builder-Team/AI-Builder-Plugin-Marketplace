@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Klair team Claude Code plugins for development workflows",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "pluginRoot": "./plugins"
   },
   "plugins": [
@@ -21,9 +21,9 @@
       "name": "m",
       "source": "./plugins/munawar",
       "description": "Personal developer toolkit - Git worktree management, PR workflows, code quality, issue triage, plugin packaging, web research, and writing tools",
-      "version": "4.9.0",
+      "version": "4.10.0",
       "category": "development",
-      "tags": ["git", "pr-review", "code-quality", "issue-triage", "plugin-packaging", "web-research", "dev-tools", "agent-maker", "session-audit", "grill-me"]
+      "tags": ["git", "pr-review", "code-quality", "issue-triage", "plugin-packaging", "web-research", "dev-tools", "agent-maker", "session-audit", "grill-me", "skill-maker"]
     },
     {
       "name": "workflow-cc-om",
@@ -48,6 +48,14 @@
       "version": "1.0.0",
       "category": "development",
       "tags": ["pr-review", "code-review", "github", "triage", "agents"]
+    },
+    {
+      "name": "benji",
+      "source": "./plugins/benji-workflow",
+      "description": "Spec-driven development workflow — research, spec, TDD implementation, and PR review with parallel agent orchestration",
+      "version": "1.0.0",
+      "category": "development",
+      "tags": ["workflow", "spec-driven", "tdd", "code-review", "orchestration", "agents"]
     }
   ]
 }

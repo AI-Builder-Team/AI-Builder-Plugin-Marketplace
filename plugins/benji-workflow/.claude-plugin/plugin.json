@@ -1,5 +1,5 @@
 {
-  "name": "benji-workflow",
+  "name": "benji",
   "description": "Spec-driven development workflow — research, spec, TDD implementation, and PR review with parallel agent orchestration",
   "version": "1.0.0",
   "author": {
