@@ -17,7 +17,7 @@ You handle these modes based on the user's request:
 |---|---|---|
 | create / new / spin up | **create** | `git town sync --all` → `git gtr new` |
 | push / ship it | **push** | `git town sync` → `git push` |
-| sync / sync all | **sync** | `git town sync [--all]` |
+| sync / sync all | **sync** | `git town sync [--all]` + iterate worktrees |
 | list / rm / clean / go | **gtr** | Direct `git gtr` commands |
 | propose / create PR | **propose** | `git town sync` → push → `gh pr create` |
 | start / launch / up | **worktree-up** | Launch frontend + backend for a worktree |
@@ -203,13 +203,29 @@ Use when the user wants to synchronize branches without creating or pushing.
 1. **Run Pre-Sync** (see "Pre-Sync: Ensure Non-Interactive" section above).
 
 2. **Determine scope:**
-   - User says "sync all" / "sync everything" → `git town sync --all`
-   - User says "sync" (no qualifier) → `git town sync` (current branch only)
+   - User says "sync all" / "sync everything" → full sync (step 3a + 3b)
+   - User says "sync" (no qualifier) → `git town sync` (current branch only, step 3a only)
 
-3. **Run sync:**
+3a. **Sync from current worktree:**
    ```bash
    git town sync [--all]
    ```
+   This syncs the current branch (or all non-worktree branches if `--all`).
+
+3b. **Sync worktree branches** (only when `--all` scope):
+
+   `git town sync --all` **skips branches checked out in other worktrees** — git cannot checkout a branch already in use by another worktree. To truly sync all branches, iterate through each worktree and sync from within it:
+
+   ```bash
+   main_wt=$(git rev-parse --show-toplevel)
+   git worktree list --porcelain | grep '^worktree ' | sed 's/^worktree //' | while read wt_path; do
+     [ "$wt_path" = "$main_wt" ] && continue
+     echo "Syncing worktree: $wt_path"
+     (cd "$wt_path" && git town sync) || echo "  ⚠ sync failed for $wt_path — may need manual conflict resolution"
+   done
+   ```
+
+   If a worktree sync fails with conflicts, note it and continue with the remaining worktrees. Report all failures at the end so the user can resolve them one at a time.
 
 4. **If conflicts:** Guide user through `git town continue` after they resolve, or `git town skip` to skip the branch.
 
