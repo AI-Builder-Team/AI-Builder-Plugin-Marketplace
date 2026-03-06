@@ -47,11 +47,11 @@ Everything the skill needs lives inside its directory tree. No references to ext
 - Look for `source ~/.bashrc`, `source ~/.zshrc`, or alias references
 
 #### P02 — Dynamic paths
-All paths derived from the environment — never hardcoded to a specific user's filesystem. SKILL.md uses relative paths (`scripts/foo.sh`) or `${CLAUDE_PLUGIN_ROOT}`. Shell scripts use `$(dirname "$0")` to find siblings, not bare `./` references. Temp files use `mktemp` with cleanup traps, not hardcoded `/tmp/skillname-*`.
+All paths derived from the environment — never hardcoded to a specific user's filesystem. SKILL.md references bundled scripts using **relative paths from the skill directory root** (e.g. `scripts/foo.sh`) — the agent resolves these automatically, no absolute paths needed. Reserve `${CLAUDE_PLUGIN_ROOT}` for non-SKILL.md contexts (hooks, MCP configs, executed scripts). Shell scripts use `$(dirname "$0")` to find siblings, not bare `./` references. Temp files use `mktemp` with cleanup traps, not hardcoded `/tmp/skillname-*`.
 
 **Check:**
 - Grep for `/Users/<username>/`, `/home/<username>/`, or any absolute path with a username
-- Look for absolute script paths in SKILL.md that should be relative
+- Look for absolute script paths in SKILL.md that should be relative (including `~/.claude/skills/...` or `${CLAUDE_PLUGIN_ROOT}` paths that could be simple relative paths)
 - In shell scripts, look for `source ./`, `cat ./` without a `SCRIPT_DIR` pattern
 - Look for hardcoded temp file paths
 

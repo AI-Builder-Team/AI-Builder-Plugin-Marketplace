@@ -61,26 +61,29 @@ Note on loading behavior — there are three tiers:
 
 So put essential instructions directly in SKILL.md. Use linked files for things Claude *might* need to reference but shouldn't pay the context cost for on every run.
 
-**Execute bundled scripts in Bash commands** using the full path:
+**Execute bundled scripts in SKILL.md** using relative paths from the skill directory:
 ```bash
-uv run --with some-package python ~/.claude/skills/my-skill/scripts/fetch_data.py "$URL"
+python3 scripts/fetch_data.py "$URL"
+uv run --with some-package python scripts/fetch_data.py "$URL"
 ```
+
+The agent resolves relative paths from the skill directory root automatically — no absolute paths needed. This works for both personal skills and plugin skills, making scripts portable by default.
 
 This pattern is useful when your skill wraps a reusable utility — the script travels with the skill, and the SKILL.md stays lean and focused on orchestration instructions.
 
 ### Portable Paths for Plugin Skills
 
-When a skill will be distributed as part of a plugin, use `${CLAUDE_PLUGIN_ROOT}` for all script and resource paths. Claude Code substitutes this with the plugin's actual install directory at runtime.
+For scripts and resources referenced in **hooks, MCP configs, or executed scripts** (not SKILL.md), use `${CLAUDE_PLUGIN_ROOT}` — Claude Code substitutes this with the plugin's actual install directory at runtime.
 
 ```bash
-# Plugin-portable path:
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/my-skill/scripts/fetch_data.py "$URL"
+# In SKILL.md — use relative paths (preferred, works everywhere):
+python3 scripts/fetch_data.py "$URL"
 
-# Personal skill path (non-portable):
-python3 ~/.claude/skills/my-skill/scripts/fetch_data.py "$URL"
+# In hooks/MCP configs/executed scripts — use the plugin root token:
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/my-skill/scripts/fetch_data.py "$URL"
 ```
 
-`${CLAUDE_PLUGIN_ROOT}` works in SKILL.md bash commands, hooks, MCP configs, and executed scripts. It is **not** a shell environment variable — it resolves only within Claude Code's plugin context.
+`${CLAUDE_PLUGIN_ROOT}` works in hooks, MCP configs, and executed scripts. It is **not** a shell environment variable — it resolves only within Claude Code's plugin context. Inside SKILL.md, prefer relative paths instead.
 
 ### Plugin Skill Naming — Prefix Rules
 
@@ -249,12 +252,12 @@ See [scripts/fetch_content.py](scripts/fetch_content.py) for the content fetcher
 ## Steps
 1. Run the bundled script:
    ```bash
-   uv run --with requests python ~/.claude/skills/research-tool/scripts/fetch_content.py "$ 0" "/tmp/research/$ 1"
+   uv run --with requests python scripts/fetch_content.py "$ 0" "/tmp/research/$ 1"
    ```
 2. Read the saved output and summarize key points
 ```
 
-The script lives at `~/.claude/skills/research-tool/scripts/fetch_content.py` — self-contained, travels with the skill.
+The script lives at `scripts/fetch_content.py` — self-contained, travels with the skill. The agent resolves the relative path from the skill directory automatically.
 
 **5. Pure Command Skill (no AI invocation):**
 ```yaml
@@ -376,7 +379,7 @@ After creating a skill, suggest the user run it on a real-world use case, then u
 
    **Otherwise (regular project repo, no plugin signals):** Default to `~/.claude/skills/[skill-name]/SKILL.md`.
 
-7. **Bundle any helper scripts** - If the skill needs utilities (Python scripts, shell scripts), put them in `[skill-name]/scripts/` and reference via markdown links in SKILL.md. Use `${CLAUDE_PLUGIN_ROOT}` for paths if the skill is in a plugin, or `~/.claude/skills/` for personal skills.
+7. **Bundle any helper scripts** - If the skill needs utilities (Python scripts, shell scripts), put them in `[skill-name]/scripts/` and reference via markdown links in SKILL.md. Use relative paths (e.g. `scripts/fetch.py`) in SKILL.md — the agent resolves them from the skill directory automatically, for both personal and plugin skills.
 8. **Provide usage example** - Show how to invoke it
 
 Ask clarifying questions if the request is ambiguous. Otherwise, proceed to create the skill.
