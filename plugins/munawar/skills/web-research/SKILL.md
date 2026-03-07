@@ -29,10 +29,10 @@ Analyze the request, choose the appropriate mode, and run the command. Then synt
 ### Step 2: Run the command
 
 ```bash
-uv run --directory ~/.claude python ~/.claude/scripts/web_research.py --<mode> "$ARGUMENTS"
+uv run --directory ~/.claude python scripts/web_research.py --<mode> "$ARGUMENTS"
 ```
 
-IMPORTANT: Always use `--directory ~/.claude` so uv finds the pyproject.toml with dependencies.
+IMPORTANT: Always use `--directory ~/.claude` so uv finds the pyproject.toml with aiohttp dependency.
 
 ### Step 3: Follow up (bounded)
 
@@ -71,10 +71,10 @@ After gathering results, write a clear summary for the user. Include source URLs
 **IMPORTANT:** `--scrape` takes ONLY a URL. Do NOT pass additional query text after the URL -- it will cause an argparse error.
 ```bash
 # Correct:
-uv run --directory ~/.claude python ~/.claude/scripts/web_research.py --scrape "https://example.com/page"
+uv run --directory ~/.claude python scripts/web_research.py --scrape "https://example.com/page"
 
 # WRONG (will fail):
-uv run --directory ~/.claude python ~/.claude/scripts/web_research.py --scrape "https://example.com/page" "tell me about X"
+uv run --directory ~/.claude python scripts/web_research.py --scrape "https://example.com/page" "tell me about X"
 ```
 
 | Parameter | Description |
