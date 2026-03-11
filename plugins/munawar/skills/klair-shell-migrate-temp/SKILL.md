@@ -1,5 +1,5 @@
 ---
-name: "m:shell-migrate"
+name: "m:klair-shell-migrate-temp"
 description: "Plan migration of a legacy screen to the new-ui shell system"
 argument-hint: "[screen-path-or-name]"
 ---

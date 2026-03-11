@@ -303,7 +303,7 @@ Before doing expensive work, check a precondition. If it fails, stop and tell th
 Check whether the file contains any `QC_BOT_COMMENTS:` annotations.
 
 - If NO annotations found: STOP immediately. Tell the user:
-  "This file has not been QC-annotated yet. Run `/m:issues-eval` first..."
+  "This file has not been QC-annotated yet. Run `/m:klair-issues-eval` first..."
 - If annotations ARE found: Proceed to Step 1.
 ```
 
@@ -369,10 +369,10 @@ This naturally enables **pipeline composition** — agents that chain together, 
 ```
 /m:pr-reader → writes .scratch/outputs/pr-N-comments.md
     ↓
-/m:issues-eval → reads that file, launches m:issue-qc agents,
-                  annotates file in-place with QC_BOT_COMMENTS
+/m:klair-issues-eval → reads that file, launches m:issue-qc agents,
+                       annotates file in-place with QC_BOT_COMMENTS
     ↓
-/m:issues-fix → reads annotated file, launches m:bugfix agents
+/m:klair-issues-fix → reads annotated file, launches m:bugfix agents
                  in phased batches
 ```
 

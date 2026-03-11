@@ -1,5 +1,5 @@
 ---
-name: "m:humanizer"
+name: "m:style-humanizer"
 version: 2.1.0
 description: |
   Remove signs of AI-generated writing from text. Use when editing or reviewing
