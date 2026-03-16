@@ -1,7 +1,7 @@
 ---
 description: "Google Chat operations for the AI Builders space"
 argument-hint: "unread | mentions [days] | reviewed"
-allowed-tools: Bash(gws chat:*), Bash(jq:*), Bash(cat:*), Bash(date:*), AskUserQuestion
+allowed-tools: Bash(gws chat:*), Bash(jq:*), Bash(cat:*), Bash(python3:*), Bash(mktemp:*), Bash(rm:*), AskUserQuestion
 ---
 
 # GChat — Google Chat CLI
@@ -35,7 +35,10 @@ This applies to ALL flows — unread actions, mentions actions, and the reviewed
 
 ## Constants
 
-- **Space ID:** `spaces/AAAAI17dp28`
+<!-- UPDATE THESE for your own setup -->
+<!-- Space ID: Google Chat space identifier. Find yours via `gws chat spaces list` -->
+- **Space ID:** `spaces/AAAAI17dp28` *(AI Builders space)*
+<!-- User ID: Your Google Chat user ID. Find yours via `gws chat users get --params '{"name": "users/me"}'` -->
 - **User ID (Ashwanth):** `users/116176676259067405846`
 
 ## Steps
@@ -86,12 +89,14 @@ gws chat spaces messages reactions create \
 To reply in a thread while tagging someone, write the JSON body to a temp file first (to avoid shell escaping issues with `<>` in user mentions):
 
 ```bash
-cat > /tmp/gchat-reply.json << 'EOF'
+TMPFILE=$(mktemp /tmp/gchat-reply.XXXXXX.json)
+cat > "$TMPFILE" << 'EOF'
 {"text": "<users/USER_ID> Reply text here", "thread": {"name": "THREAD_NAME"}}
 EOF
 gws chat spaces messages create \
   --params '{"parent": "spaces/AAAAI17dp28", "messageReplyOption": "REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD"}' \
-  --json "$(cat /tmp/gchat-reply.json)"
+  --json "$(cat "$TMPFILE")"
+rm -f "$TMPFILE"
 ```
 
 - Replace `USER_ID` with the sender's user ID from `sender.name`
@@ -112,23 +117,37 @@ Execute both actions in parallel when the user approves.
 
 Fetch all messages where Ashwanth is tagged in the AI Builders space within the last N days.
 
-### 1. Calculate the cutoff timestamp
+### 1. Calculate cutoff timestamps
 
-Compute the ISO 8601 timestamp for N days ago. For example, if today is 2026-03-16 and N=7, the cutoff is `2026-03-09T00:00:00Z`.
+Compute ISO 8601 timestamps using Python for cross-platform compatibility (works on both macOS and Linux):
 
 ```bash
-date -u -v-Nd '+%Y-%m-%dT%H:%M:%SZ'
+python3 -c "from datetime import datetime, timedelta, timezone; print((datetime.now(timezone.utc) - timedelta(days=N)).strftime('%Y-%m-%dT%H:%M:%SZ'))"
 ```
 
 Replace `N` with the number of days.
 
-### 2. Fetch messages mentioning Ashwanth
+### 2. Fetch messages mentioning Ashwanth (progressive)
+
+<!-- Note: The Google Chat API does not support filtering by mention server-side.
+     Only `createTime` and `thread.name` filters are available on `messages.list`.
+     To minimize payload, we fetch progressively: 1 day at a time, expanding until
+     mentions are found or the full N-day window is exhausted. -->
+
+Use progressive fetching to minimize payload — start with 1 day, expand day-by-day up to N days:
+
+1. Set `D = 1` (current window in days).
+2. Compute the cutoff for D days ago (using the Python command above).
+3. Fetch messages:
 
 ```bash
 gws chat spaces messages list --params '{"parent": "spaces/AAAAI17dp28", "filter": "createTime > \"CUTOFF_TIME\"", "orderBy": "createTime asc"}' --page-all
 ```
 
-Then filter the results to only messages where `annotations` contains a `USER_MENTION` with `user.name` equal to `users/116176676259067405846` (Ashwanth's user ID).
+4. Filter the results to only messages where `annotations` contains a `USER_MENTION` with `user.name` equal to `users/116176676259067405846` (Ashwanth's user ID).
+5. If mentions are found, proceed to step 3 (Present results).
+6. If no mentions found and `D < N`, increment `D` and repeat from step 2.
+7. If `D == N` and still no mentions, report "No mentions in AI Builders in the last N days."
 
 ### 3. Present results
 
@@ -171,13 +190,28 @@ Store: `PR_REVIEW_LINK` and `REVIEW_TYPE`.
 
 ### 2. Find the thread
 
-Auto-discover the thread where Ashwanth previously acknowledged the PR review request. Do this by fetching recent mentions (last 7 days) and matching the PR:
+Auto-discover the thread where Ashwanth previously acknowledged the PR review request. Use progressive fetching to minimize payload — start with 1 day, expand day-by-day up to 7 days:
+
+<!-- Note: Same progressive approach as mentions flow — the Chat API doesn't support
+     server-side filtering by message content, so we fetch and search locally. -->
+
+1. Set `D = 1`.
+2. Compute the cutoff for D days ago:
 
 ```bash
-gws chat spaces messages list --params '{"parent": "spaces/AAAAI17dp28", "filter": "createTime > \"CUTOFF_7_DAYS\"", "orderBy": "createTime desc"}' --page-all
+python3 -c "from datetime import datetime, timedelta, timezone; print((datetime.now(timezone.utc) - timedelta(days=D)).strftime('%Y-%m-%dT%H:%M:%SZ'))"
 ```
 
-From the results, look for a thread that contains a message referencing the same PR URL (or PR number) from `PR_REVIEW_LINK`. The thread to use is the one where the original review request was posted.
+3. Fetch messages:
+
+```bash
+gws chat spaces messages list --params '{"parent": "spaces/AAAAI17dp28", "filter": "createTime > \"CUTOFF_TIME\"", "orderBy": "createTime desc"}' --page-all
+```
+
+4. From the results, look for a thread that contains a message referencing the same PR URL (or PR number) from `PR_REVIEW_LINK`. The thread to use is the one where the original review request was posted.
+5. If a matching thread is found, proceed to step 3 (Preview and confirm).
+6. If no match and `D < 7`, increment `D` and repeat from step 2.
+7. If `D == 7` and no match, ask the user for context (see below).
 
 **Matching strategy (in priority order):**
 1. Look for messages containing the PR URL (e.g. `github.com/.../pull/2215`)
@@ -204,12 +238,14 @@ If denied, stop or ask for edits.
 Only after user approval:
 
 ```bash
-cat > /tmp/gchat-reply.json << 'EOF'
+TMPFILE=$(mktemp /tmp/gchat-reply.XXXXXX.json)
+cat > "$TMPFILE" << 'EOF'
 {"text": "MESSAGE_BASED_ON_REVIEW_TYPE", "thread": {"name": "THREAD_NAME"}}
 EOF
 gws chat spaces messages create \
   --params '{"parent": "spaces/AAAAI17dp28", "messageReplyOption": "REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD"}' \
-  --json "$(cat /tmp/gchat-reply.json)"
+  --json "$(cat "$TMPFILE")"
+rm -f "$TMPFILE"
 ```
 
 Replace `PR_REVIEW_LINK` and `THREAD_NAME` with the values from steps 1 and 2.
