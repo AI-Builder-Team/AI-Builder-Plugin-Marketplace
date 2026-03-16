@@ -298,6 +298,7 @@ The agent must:
    ```
    Use `gh repo view --json nameWithOwner -q .nameWithOwner` to get `{owner}/{repo}`.
 3. For each finding, attempt to map `file:line` to a **diff position** (the line number within the unified diff patch, which is what GitHub's review API requires). The diff position is the line offset within the `patch` field of the file in the API response.
+   **CRITICAL: Do ALL position mapping locally by parsing the `patch` string from the API response. NEVER post test comments, validation comments, or trial comments to the PR. The only API write should be the single final review in step 4.**
 4. Build a single PR review with all mappable comments:
    ```bash
    gh api repos/{owner}/{repo}/pulls/<PR_NUMBER>/reviews \
