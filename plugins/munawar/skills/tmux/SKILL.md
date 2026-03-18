@@ -1,5 +1,5 @@
 ---
-name: "m:tmux"
+name: tmux
 description: Manage Claude Code sessions across 8, 10, or 12 tmux panes in a single workstation
 argument-hint: "[status|launch|quit|send] [pane] [dir] [args]"
 ---

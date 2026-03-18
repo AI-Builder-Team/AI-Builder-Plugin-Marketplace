@@ -38,9 +38,8 @@ fi
 # Kill existing session if present
 tmux kill-session -t "$SESSION" 2>/dev/null
 
-# Launch Ghostty with a new tmux session
-ghostty -e tmux new-session -s "$SESSION" &
-sleep 1.5
+# Create detached tmux session
+tmux new-session -d -s "$SESSION"
 
 # Split left | right (left ~20%, right ~80%)
 tmux split-window -h -t "$SESSION:0.0" -p 80
