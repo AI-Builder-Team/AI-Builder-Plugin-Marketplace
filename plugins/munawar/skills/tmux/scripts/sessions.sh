@@ -258,6 +258,7 @@ _pane_ui_state() {
   fi
 
   # Animation chars ✢✳✶✻✽ on screen = inferring, unless only in gray (completion line)
+  # Claude Code may use truecolor (38;2;R;G;B) or 256-color (38;5;N) escapes.
   # Sample 3 times over ~300ms to cover animation frame gaps
   local t_pane
   t_pane=$(target "$pane")
@@ -265,11 +266,20 @@ _pane_ui_state() {
   for attempt in 1 2 3; do
     if tmux capture-pane -t "$t_pane" -e -p | perl -e \
       'use utf8; binmode(STDIN, ":utf8");
+      # 256-color indices considered gray (approximate)
+      my %gray256 = map {$_ => 1} (7, 8, 145, 146, 148, 150, 153, 188, 231,
+                                    232..255, 240..250);
       while(<>){
         next unless /[\x{2722}\x{2733}\x{2736}\x{273B}\x{273D}]/;
-        my @colors = /38;2;(\d+;\d+;\d+)/g;
-        for my $c (@colors){
+        # Truecolor: 38;2;R;G;B
+        my @rgb = /38;2;(\d+;\d+;\d+)/g;
+        for my $c (@rgb){
           exit 0 unless $c eq "153;153;153";
+        }
+        # 256-color: 38;5;N
+        my @c256 = /38;5;(\d+)/g;
+        for my $n (@c256){
+          exit 0 unless $gray256{$n};
         }
       } exit 1'; then
       echo "INFERRING"
